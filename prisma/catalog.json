@@ -1,0 +1,569 @@
+{
+  "categories": [
+    {
+      "handle": "fruits",
+      "name": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/p3zniyilh6tw/Fruits.png",
+      "image": "/media/optimized/cat-fruits.webp",
+      "productCount": 19
+    },
+    {
+      "handle": "veggies",
+      "name": "Veggies",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/kvlkg0l31kgj/Veggies.png",
+      "image": "/media/optimized/cat-veggies.webp",
+      "productCount": 5
+    },
+    {
+      "handle": "meats",
+      "name": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/qkk3wuw8mwi0/Meats.png",
+      "image": "/media/optimized/cat-meats.webp",
+      "productCount": 7
+    },
+    {
+      "handle": "seafood",
+      "name": "Seafood",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/m6ilr2trd8x7/Seafood.png",
+      "image": "/media/optimized/cat-seafood.webp",
+      "productCount": 1
+    },
+    {
+      "handle": "dairy-eggs",
+      "name": "Dairy & Eggs",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/u4w85maa94fn/Dairy_%26_Eggs.png",
+      "image": "/media/optimized/cat-dairy-eggs.webp",
+      "productCount": 6
+    },
+    {
+      "handle": "bakery",
+      "name": "Bakery",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/54dfog1a0jdz/Bakery.png",
+      "image": "/media/optimized/cat-bakery.webp",
+      "productCount": 3
+    },
+    {
+      "handle": "pantry",
+      "name": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/3qfxzgjymsqa/Pantry.png",
+      "image": "/media/optimized/cat-pantry.webp",
+      "productCount": 9
+    },
+    {
+      "handle": "beverages",
+      "name": "Beverages",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/yswjchc775vr/Beverages.png",
+      "image": "/media/optimized/cat-beverages.webp",
+      "productCount": 0
+    },
+    {
+      "handle": "snacks",
+      "name": "Snacks",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/r4v3v4ihjuef/Snacks.png",
+      "image": "/media/optimized/cat-snacks.webp",
+      "productCount": 0
+    }
+  ],
+  "products": [
+    {
+      "handle": "organic-lemon",
+      "name": "Organic lemon",
+      "unit": "4 Pic",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/js31tsa4pk9q/Rectangle_126-7-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-7-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 122
+    },
+    {
+      "handle": "mango",
+      "name": "Mango",
+      "unit": "1 kg",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/w71mzb0h705m/Rectangle_126-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 599
+    },
+    {
+      "handle": "fresh-raw-beef",
+      "name": "Fresh raw beef",
+      "unit": "2 Kg",
+      "category": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/cqgdfhhekr8p/Rectangle_126-6-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-6-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 1902
+    },
+    {
+      "handle": "fresh-banana",
+      "name": "Fresh banana",
+      "unit": "8 pic",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/zb2mski5wvd5/Rectangle_126-4-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-4-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 299
+    },
+    {
+      "handle": "organic-lemon-fruits",
+      "name": "Organic lemon fruits",
+      "unit": "4 Pic",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/2nk70r9coqev/Rectangle_152-removebg-preview.png",
+      "image": "/media/optimized/rectangle-152-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 122
+    },
+    {
+      "handle": "fresh-apple",
+      "name": "Fresh apple",
+      "unit": "1 kg",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/s9hpcalrh8o0/Rectangle_126-5-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-5-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 499
+    },
+    {
+      "handle": "avocado",
+      "name": "Avocado",
+      "unit": "1 kg",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/0p2muhaq1ot0/Rectangle_126-1-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-1-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 1400
+    },
+    {
+      "handle": "raw-seabass-fish",
+      "name": "Raw seabass fish",
+      "unit": "1 Pic",
+      "category": "Seafood",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/qczz1s0dl8x7/Rectangle_126-2-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-2-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 1400
+    },
+    {
+      "handle": "pineapple",
+      "name": "Pineapple",
+      "unit": "8 pic",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/0wkoay90c13s/Rectangle_152-1-removebg-preview.png",
+      "image": "/media/optimized/rectangle-152-1-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 300
+    },
+    {
+      "handle": "fresh-orange-juice",
+      "name": "Fresh orange juice",
+      "unit": "1 L",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/8yuotlszixk0/Rectangle_126-3-removebg-preview.png",
+      "image": "/media/optimized/rectangle-126-3-removebg-preview.webp",
+      "group": "featured",
+      "priceCents": 1006
+    },
+    {
+      "handle": "cucumber",
+      "name": "Cucumber",
+      "unit": "200 gm",
+      "category": "Veggies",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/7kklg84tmvts/GroceryItems_(13).png",
+      "image": "/media/optimized/groceryitems-13.webp",
+      "group": "catalog",
+      "priceCents": 249
+    },
+    {
+      "handle": "strawberries",
+      "name": "Strawberries",
+      "unit": "250 gm",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/i4ctnogabpm5/GroceryItems_(3).png",
+      "image": "/media/optimized/groceryitems-3.webp",
+      "group": "catalog",
+      "priceCents": 229
+    },
+    {
+      "handle": "ground-beef",
+      "name": "Ground Beef",
+      "unit": "500 gm",
+      "category": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/tlqq0xnqhnpz/GroceryItems_(24).png",
+      "image": "/media/optimized/groceryitems-24.webp",
+      "group": "catalog",
+      "priceCents": 519
+    },
+    {
+      "handle": "avocado-2",
+      "name": "Avocado",
+      "unit": "2 pcs",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/u2lyetv49l1n/GroceryItems_(4).png",
+      "image": "/media/optimized/groceryitems-4.webp",
+      "group": "catalog",
+      "priceCents": 1400
+    },
+    {
+      "handle": "red-apples",
+      "name": "Red Apples",
+      "unit": "500 gm",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/4frxo4c6sej7/GroceryItems_(7).png",
+      "image": "/media/optimized/groceryitems-7.webp",
+      "group": "catalog",
+      "priceCents": 250
+    },
+    {
+      "handle": "sweet-corn",
+      "name": "Sweet Corn",
+      "unit": "200 gm",
+      "category": "Veggies",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/rq2x7qkqb3kr/GroceryItems_(10).png",
+      "image": "/media/optimized/groceryitems-10.webp",
+      "group": "catalog",
+      "priceCents": 249
+    },
+    {
+      "handle": "dragon-fruit",
+      "name": "Dragon Fruit",
+      "unit": "1 pc",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/vikzlvust334/GroceryItems_(5).png",
+      "image": "/media/optimized/groceryitems-5.webp",
+      "group": "catalog",
+      "priceCents": 299
+    },
+    {
+      "handle": "garlic-baguette",
+      "name": "Garlic Baguette",
+      "unit": "1 pcs",
+      "category": "Veggies",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/dniam63ck5zm/GroceryItems_(17).png",
+      "image": "/media/optimized/groceryitems-17.webp",
+      "group": "catalog",
+      "priceCents": 329
+    },
+    {
+      "handle": "blueberries",
+      "name": "Blueberries",
+      "unit": "250 gm",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/48odfcmcoa0d/GroceryItems_(28).png",
+      "image": "/media/optimized/groceryitems-28.webp",
+      "group": "catalog",
+      "priceCents": 359
+    },
+    {
+      "handle": "chicken-wings",
+      "name": "Chicken Wings",
+      "unit": "500 gm",
+      "category": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/q26ini7v1fdg/GroceryItems_(23).png",
+      "image": "/media/optimized/groceryitems-23.webp",
+      "group": "catalog",
+      "priceCents": 429
+    },
+    {
+      "handle": "leeks",
+      "name": "Leeks",
+      "unit": "300 gm",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/8pmuzq8ygbmt/GroceryItems_(12).png",
+      "image": "/media/optimized/groceryitems-12.webp",
+      "group": "catalog",
+      "priceCents": 189
+    },
+    {
+      "handle": "pumpkin-slice",
+      "name": "Pumpkin Slice",
+      "unit": "300 gm",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/mcj8yr0hotni/GroceryItems_(14).png",
+      "image": "/media/optimized/groceryitems-14.webp",
+      "group": "catalog",
+      "priceCents": 359
+    },
+    {
+      "handle": "kiwi",
+      "name": "Kiwi",
+      "unit": "3 pcs",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/ptmqe4v3r0pv/GroceryItems_(6).png",
+      "image": "/media/optimized/groceryitems-6.webp",
+      "group": "catalog",
+      "priceCents": 279
+    },
+    {
+      "handle": "whipping-cream",
+      "name": "Whipping Cream",
+      "unit": "300 gm",
+      "category": "Dairy & Eggs",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/2n7tnc8wpuwi/GroceryItems_(36).png",
+      "image": "/media/optimized/groceryitems-36.webp",
+      "group": "catalog",
+      "priceCents": 299
+    },
+    {
+      "handle": "eggplant",
+      "name": "Eggplant",
+      "unit": "500 gm",
+      "category": "Veggies",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/vlfinjjuldzs/GroceryItems_(11).png",
+      "image": "/media/optimized/groceryitems-11.webp",
+      "group": "catalog",
+      "priceCents": 209
+    },
+    {
+      "handle": "beef-sirloin",
+      "name": "Beef Sirloin",
+      "unit": "300 gm",
+      "category": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/r8txgl2xk4ur/GroceryItems_(25).png",
+      "image": "/media/optimized/groceryitems-25.webp",
+      "group": "catalog",
+      "priceCents": 649
+    },
+    {
+      "handle": "wheat-bread",
+      "name": "Wheat Bread",
+      "unit": "1 loaf",
+      "category": "Bakery",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/nioltrv15uj0/GroceryItems_(20).png",
+      "image": "/media/optimized/groceryitems-20.webp",
+      "group": "catalog",
+      "priceCents": 299
+    },
+    {
+      "handle": "mango-2",
+      "name": "Mango",
+      "unit": "1 pcs",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/4snm85j32im6/GroceryItems_(31).png",
+      "image": "/media/optimized/groceryitems-31.webp",
+      "group": "catalog",
+      "priceCents": 599
+    },
+    {
+      "handle": "bok-choy",
+      "name": "Bok Choy",
+      "unit": "250 gm",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/ab3klvmpjjuu/GroceryItems_(1).png",
+      "image": "/media/optimized/groceryitems-1.webp",
+      "group": "catalog",
+      "priceCents": 320
+    },
+    {
+      "handle": "pineapple-2",
+      "name": "Pineapple",
+      "unit": "1 pcs",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/y3qqb9vudxf8/GroceryItems_(29).png",
+      "image": "/media/optimized/groceryitems-29.webp",
+      "group": "catalog",
+      "priceCents": 300
+    },
+    {
+      "handle": "croissant",
+      "name": "Croissant",
+      "unit": "2 pcs",
+      "category": "Bakery",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/h6jqx4sr5upl/GroceryItems_(9).png",
+      "image": "/media/optimized/groceryitems-9.webp",
+      "group": "catalog",
+      "priceCents": 349
+    },
+    {
+      "handle": "mozzarella-cheese",
+      "name": "Mozzarella Cheese",
+      "unit": "250 gm",
+      "category": "Dairy & Eggs",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/rpsp554f0ypy/GroceryItems_(37).png",
+      "image": "/media/optimized/groceryitems-37.webp",
+      "group": "catalog",
+      "priceCents": 349
+    },
+    {
+      "handle": "oranges",
+      "name": "Oranges",
+      "unit": "1 kg",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/agppkuxksqs2/GroceryItems_(8).png",
+      "image": "/media/optimized/groceryitems-8.webp",
+      "group": "catalog",
+      "priceCents": 329
+    },
+    {
+      "handle": "greek-yogurt",
+      "name": "Greek Yogurt",
+      "unit": "200 gm",
+      "category": "Dairy & Eggs",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/mfjb5sichgat/GroceryItems_(38).png",
+      "image": "/media/optimized/groceryitems-38.webp",
+      "group": "catalog",
+      "priceCents": 229
+    },
+    {
+      "handle": "smoked-sausage",
+      "name": "Smoked Sausage",
+      "unit": "300 gm",
+      "category": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/v0nzt2m2xs1p/GroceryItems_(22).png",
+      "image": "/media/optimized/groceryitems-22.webp",
+      "group": "catalog",
+      "priceCents": 399
+    },
+    {
+      "handle": "cinnamon-roll",
+      "name": "Cinnamon Roll",
+      "unit": "2 pcs",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/pelbcj4yz9jr/GroceryItems_(18).png",
+      "image": "/media/optimized/groceryitems-18.webp",
+      "group": "catalog",
+      "priceCents": 319
+    },
+    {
+      "handle": "cottage-cheese",
+      "name": "Cottage Cheese",
+      "unit": "200 gm",
+      "category": "Dairy & Eggs",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/hji4yzvlghac/GroceryItems_(34).png",
+      "image": "/media/optimized/groceryitems-34.webp",
+      "group": "catalog",
+      "priceCents": 259
+    },
+    {
+      "handle": "green-grapes",
+      "name": "Green Grapes",
+      "unit": "500 gm",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/v2aby3gsrd7k/GroceryItems_(32).png",
+      "image": "/media/optimized/groceryitems-32.webp",
+      "group": "catalog",
+      "priceCents": 349
+    },
+    {
+      "handle": "chicken-breast",
+      "name": "Chicken Breast",
+      "unit": "500 gm",
+      "category": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/01u8ipm6swxl/GroceryItems_(26).png",
+      "image": "/media/optimized/groceryitems-26.webp",
+      "group": "catalog",
+      "priceCents": 489
+    },
+    {
+      "handle": "red-bell-pepper",
+      "name": "Red Bell Pepper",
+      "unit": "250 gm",
+      "category": "Veggies",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/n61hof4miiy9/GroceryItems_(2).png",
+      "image": "/media/optimized/groceryitems-2.webp",
+      "group": "catalog",
+      "priceCents": 255
+    },
+    {
+      "handle": "salted-butter",
+      "name": "Salted Butter",
+      "unit": "250 gm",
+      "category": "Dairy & Eggs",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/2a84yr3dwgco/GroceryItems_(33).png",
+      "image": "/media/optimized/groceryitems-33.webp",
+      "group": "catalog",
+      "priceCents": 269
+    },
+    {
+      "handle": "papaya",
+      "name": "Papaya",
+      "unit": "1 pcs",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/vqhy3l91ekh5/GroceryItems_(30).png",
+      "image": "/media/optimized/groceryitems-30.webp",
+      "group": "catalog",
+      "priceCents": 279
+    },
+    {
+      "handle": "chocolate-milk",
+      "name": "Chocolate Milk",
+      "unit": "250 gm",
+      "category": "Dairy & Eggs",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/7vln1uuj3gp5/GroceryItems_(35).png",
+      "image": "/media/optimized/groceryitems-35.webp",
+      "group": "catalog",
+      "priceCents": 189
+    },
+    {
+      "handle": "chocolate-muffin",
+      "name": "Chocolate Muffin",
+      "unit": "2 pcs",
+      "category": "Bakery",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/bx0la7p2ynev/GroceryItems_(19).png",
+      "image": "/media/optimized/groceryitems-19.webp",
+      "group": "catalog",
+      "priceCents": 259
+    },
+    {
+      "handle": "watermelon-slice",
+      "name": "Watermelon Slice",
+      "unit": "400 gm",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/lhyitv8dlhb5/GroceryItems_(27).png",
+      "image": "/media/optimized/groceryitems-27.webp",
+      "group": "catalog",
+      "priceCents": 240
+    },
+    {
+      "handle": "lamb-chops",
+      "name": "Lamb Chops",
+      "unit": "400 gm",
+      "category": "Meats",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/i1cpyma4nhy4/GroceryItems_(21).png",
+      "image": "/media/optimized/groceryitems-21.webp",
+      "group": "catalog",
+      "priceCents": 679
+    },
+    {
+      "handle": "banana-bread",
+      "name": "Banana Bread",
+      "unit": "1 slices",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/l787qlow7jje/GroceryItems_(16).png",
+      "image": "/media/optimized/groceryitems-16.webp",
+      "group": "catalog",
+      "priceCents": 249
+    },
+    {
+      "handle": "kale-leaves",
+      "name": "Kale Leaves",
+      "unit": "250 gm",
+      "category": "Pantry",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/dntlqyxpdmk9/GroceryItems_(15).png",
+      "image": "/media/optimized/groceryitems-15.webp",
+      "group": "catalog",
+      "priceCents": 199
+    },
+    {
+      "handle": "bananas",
+      "name": "Bananas",
+      "unit": "1 Dozen",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/p86svkk2yohi/GroceryItems39_(2).png",
+      "image": "/media/optimized/groceryitems39-2.webp",
+      "group": "catalog",
+      "priceCents": 299
+    },
+    {
+      "handle": "grapes",
+      "name": "Grapes",
+      "unit": "500 gm",
+      "category": "Fruits",
+      "imageSourceUrl": "https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/assets-3ajpcu/assets/ck1b6o1cv1ee/GroceryItems39_(1).png",
+      "image": "/media/optimized/groceryitems39-1.webp",
+      "group": "catalog",
+      "priceCents": 339
+    }
+  ]
+}

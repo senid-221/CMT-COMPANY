@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  handle   String    @unique
+  name     String
+  nameFr   String?
+  image    String
+  sort     Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  handle       String   @unique
+  name         String
+  nameFr       String?
+  searchName   String   @default("")
+  description  String?
+  descriptionFr String?
+  unit         String
+  priceCents   Int
+  compareAtCents Int?
+  image        String
+  featured     Boolean  @default(false)
+  stock        Int      @default(60)
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId   String
+  seller       Seller?  @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  sellerId     String?
+  items        OrderItem[]
+  reviews      Review[]
+  createdAt    DateTime @default(now())
+
+  @@index([categoryId])
+  @@index([searchName])
+  @@index([sellerId])
+}
+
+model Seller {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  phone        String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  products     Product[]
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  number        String      @unique
+  status        String      @default("placed")
+  customerName  String
+  phone         String
+  email         String?
+  addressLine   String
+  city          String
+  deliveryNote  String?
+  slot          String
+  paymentMethod String      @default("cod")
+  paymentStatus String      @default("unpaid")
+  paymentRef    String?     @unique
+  paymentTransactionId String?
+  paymentCurrency String?
+  paymentAmount Int?
+  paidAt        DateTime?
+  subtotalCents Int
+  deliveryFeeCents Int
+  totalCents    Int
+  customer      Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId    String?
+  placedAt      DateTime    @default(now())
+  items         OrderItem[]
+
+  @@index([phone])
+  @@index([status])
+  @@index([customerId])
+}
+
+model Customer {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  phone        String?
+  passwordHash String?
+  googleId     String?   @unique
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  orders       Order[]
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String
+  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId    String?
+  productName  String
+  unit         String
+  unitPriceCents Int
+  quantity     Int
+  lineTotalCents Int
+}
+
+model SellerApplication {
+  id           String   @id @default(cuid())
+  storeName    String
+  contactName  String
+  phone        String
+  email        String?
+  city         String
+  categories   String
+  message      String?
+  status       String   @default("new")
+  createdAt    DateTime @default(now())
+
+  @@index([status])
+  @@index([phone])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String    @default("Administrator")
+  passwordHash String
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  author    String
+  rating    Int
+  body      String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  @@index([productId, status])
+  @@index([status, createdAt])
+}
+
+model SiteContent {
+  id        String   @id @default("site")
+  data      String
+  updatedAt DateTime @updatedAt
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  device    String
+  visitorId String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+}
