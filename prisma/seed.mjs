@@ -197,6 +197,46 @@ async function main() {
     }
   }
 
+  const jumiaPath = path.resolve('prisma/jumia-bestsellers-catalog.json');
+  if (fs.existsSync(jumiaPath)) {
+    const jumia = JSON.parse(fs.readFileSync(jumiaPath, 'utf8'));
+    const c = jumia.newCategory;
+    await prisma.category.upsert({
+      where: { handle: c.handle },
+      update: { name: c.name, nameFr: c.nameFr, image: c.image, sort: c.sort },
+      create: { handle: c.handle, name: c.name, nameFr: c.nameFr, image: c.image, sort: c.sort },
+    });
+
+    const categoryIdsByHandle = new Map(
+      (await prisma.category.findMany({ select: { id: true, handle: true } })).map((row) => [row.handle, row.id]),
+    );
+
+    for (const p of jumia.products) {
+      const categoryId = categoryIdsByHandle.get(p.category);
+      if (!categoryId) continue;
+      const data = {
+        name: p.name,
+        nameFr: p.nameFr ?? null,
+        searchName: `${p.name} ${p.nameFr ?? ''}`.toLowerCase(),
+        description: p.description,
+        descriptionFr: p.descriptionFr ?? null,
+        unit: p.unit,
+        priceCents: p.priceCents,
+        compareAtCents: p.compareAtCents ?? null,
+        image: p.image,
+        featured: p.featured === true,
+        stock: p.stock,
+      };
+
+      await prisma.product.upsert({
+        where: { handle: p.handle },
+        update: { ...data, categoryId },
+        create: { handle: p.handle, categoryId, ...data },
+      });
+      created++;
+    }
+  }
+
   console.log(`seeded ${categoryIds.size} categories, ${created} products`);
 }
 
