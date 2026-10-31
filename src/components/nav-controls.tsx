@@ -38,10 +38,10 @@ export function MenuButton({ items, locale }: { items: MenuItem[]; locale: Local
         aria-label={t(locale, 'nav.menu')}
         className="grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full border border-line bg-canvas text-ink transition hover:border-brand hover:text-brand"
       >
-        {open ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
+        {open ? <CloseIcon size={22} /> : <MenuIcon size={22} />}
       </button>
       {open ? (
-        <div className="card absolute left-0 top-12 z-40 w-60 p-1.5 shadow-lg sm:left-auto sm:right-0">
+        <div className="card absolute right-0 top-12 z-40 w-60 p-1.5 shadow-lg">
           {items.map((item) => (
             <Link
               key={item.href}
@@ -82,7 +82,7 @@ export function ThemeToggle({ locale }: { locale: Locale }) {
       aria-label={dark ? t(locale, 'theme.light') : t(locale, 'theme.dark')}
       className="grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand"
     >
-      {dark ? <SunIcon size={20} /> : <MoonIcon size={20} />}
+      {dark ? <SunIcon size={22} /> : <MoonIcon size={22} />}
     </button>
   );
 }

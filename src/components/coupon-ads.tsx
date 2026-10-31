@@ -42,15 +42,15 @@ export function CouponAds({ coupons, locale, market }: { coupons: CouponRow[]; l
         </div>
       </div>
 
-      <h2 className="font-display text-xl font-semibold">{t(locale, 'coupon.title')}</h2>
+      <h2 className="text-center font-display text-xl font-semibold">{t(locale, 'coupon.title')}</h2>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-wrap justify-center gap-3">
         {coupons.map((coupon, index) => {
           const shown = revealed[coupon.id];
           return (
             <article
               key={coupon.id}
-              className="ticket flip-in"
+              className="ticket flip-in grow basis-[280px] max-w-[420px]"
               style={{ animationDelay: `${index * 90}ms` }}
             >
               <div className="min-w-0 flex-1 space-y-1 p-4">

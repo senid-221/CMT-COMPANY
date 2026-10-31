@@ -73,27 +73,27 @@ export default async function StoreLayout({ children }: { children: React.ReactN
           </form>
 
           <nav className="ml-auto flex items-center gap-0 sm:gap-1">
-            <MenuButton locale={locale} items={menuItems(locale)} />
             <MarketSwitch locale={locale} market={market} options={availableMarkets()} />
             <LocaleSwitch locale={locale} />
             <Link href="/notifications" aria-label={t(locale, 'nav.notifications')} className={ICON_LINK}>
-              <BellIcon size={20} />
+              <BellIcon size={22} />
             </Link>
             <Link href="/orders" aria-label={t(locale, 'nav.orders')} className={ICON_LINK}>
-              <CalendarIcon size={20} />
+              <CalendarIcon size={22} />
             </Link>
             <Link href="/cart" aria-label={t(locale, 'nav.cart')} data-cart-target className={ICON_LINK}>
-              <CartIcon size={20} />
+              <CartIcon size={22} />
               <CartBadge />
             </Link>
             <Link href="/saved" aria-label={t(locale, 'nav.saved')} className={`${ICON_LINK} hidden sm:grid`}>
-              <BookmarkIcon size={20} />
+              <BookmarkIcon size={22} />
               <SavedBadge />
             </Link>
             <Link href="/account" aria-label={t(locale, 'nav.account')} className={`${ICON_LINK} hidden sm:grid`}>
-              <UserIcon size={20} />
+              <UserIcon size={22} />
             </Link>
             <ThemeToggle locale={locale} />
+            <MenuButton locale={locale} items={menuItems(locale)} />
           </nav>
         </div>
 

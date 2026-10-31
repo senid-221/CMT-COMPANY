@@ -68,18 +68,17 @@ export function MarketSwitch({ locale, market, options }: { locale: Locale; mark
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={t(locale, 'market.label')}
-        title={t(locale, 'market.label')}
-        className="flex h-10 max-[399px]:h-9 items-center gap-1 rounded-full border border-line bg-canvas px-2.5 text-[11px] font-semibold uppercase tracking-wide text-ink transition hover:border-brand hover:text-brand"
+        title={`${t(locale, 'market.label')} · ${market.currency}`}
+        className="relative grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand"
       >
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
           <path d="M12 21s-6.5-5.4-6.5-10a6.5 6.5 0 1 1 13 0c0 4.6-6.5 10-6.5 10Z" strokeLinejoin="round" />
           <circle cx="12" cy="11" r="2.2" />
         </svg>
-        <span className="max-[399px]:hidden">{market.currency}</span>
-        {detected ? <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden /> : null}
+        {detected ? <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-brand" aria-hidden /> : null}
       </button>
       {open ? (
-        <div className="card absolute right-0 top-12 z-40 w-56 p-1.5 shadow-lg">
+        <div className="card absolute left-0 top-12 z-40 w-56 p-1.5 shadow-lg">
           {detectedMarket ? (
             <div className="mb-1 flex items-center justify-between gap-2 rounded-lg bg-brand/5 px-3 py-2 text-[11px] font-semibold text-brand">
               <span>{t(locale, 'market.detected', { country: detectedMarket.names[locale] })}</span>
