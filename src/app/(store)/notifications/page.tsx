@@ -3,7 +3,7 @@ import { getMarket } from '@/lib/market';
 import { t } from '@/lib/i18n';
 import { NotificationsView } from '@/components/notifications-view';
 
-export const metadata = { title: 'Notifications' };
+export const metadata = { title: 'Notifications', robots: { index: false } };
 
 export default async function NotificationsPage() {
   const [locale, market] = await Promise.all([getLocale(), getMarket()]);

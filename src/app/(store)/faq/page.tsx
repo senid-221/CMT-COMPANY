@@ -1,7 +1,8 @@
 import { getLocale } from "@/lib/locale";
 import { InfoArticle } from "@/components/info-article";
+import { infoMetadata } from "@/lib/info";
 
-export const metadata = { title: "Frequently asked questions" };
+export const metadata = infoMetadata('faq');
 
 export default async function Page() {
   const locale = await getLocale();

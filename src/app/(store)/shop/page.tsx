@@ -1,16 +1,39 @@
+import type { Metadata } from 'next';
 import { getLocale } from '@/lib/locale';
 import { getMarket } from '@/lib/market';
 import { t } from '@/lib/i18n';
 import type { SortKey } from '@/lib/catalog';
 import { getCategories, getProducts } from '@/lib/catalog';
+import { OG_IMAGE } from '@/lib/seo';
 import { Filters, ProductGrid } from '@/components/shop-ui';
 
 const SORTS: SortKey[] = ['name', 'price-asc', 'price-desc', 'newest', 'rating'];
 
+type Query = { q?: string; category?: string; sort?: string; deals?: string; minRating?: string };
+
+const SHOP_DESCRIPTION =
+  'Browse the full CityMarket catalogue — groceries, beauty, drinks, fashion and electronics at clear prices, delivered to your door.';
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Query> }): Promise<Metadata> {
+  const query = await searchParams;
+  const title = query.deals === '1' ? 'Deals' : query.q ? `Search results` : 'Shop all products';
+  // Sorted and filtered views are crawl traps; only the plain catalogue is indexable.
+  const filtered = Boolean(query.q || query.category || query.sort || query.deals === '1' || query.minRating);
+
+  return {
+    title,
+    description: SHOP_DESCRIPTION,
+    alternates: { canonical: '/shop' },
+    ...(filtered ? { robots: { index: false, follow: true } } : {}),
+    openGraph: { type: 'website', siteName: 'CityMarket', url: '/shop', title, description: SHOP_DESCRIPTION, images: [OG_IMAGE] },
+    twitter: { card: 'summary_large_image', title, description: SHOP_DESCRIPTION, images: [OG_IMAGE.url] },
+  };
+}
+
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; sort?: string; deals?: string; minRating?: string }>;
+  searchParams: Promise<Query>;
 }) {
   const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const params = await searchParams;

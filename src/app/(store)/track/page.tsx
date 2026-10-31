@@ -6,7 +6,7 @@ import { formatMoney } from '@/lib/money';
 import { getMarket } from '@/lib/market';
 import { findOrdersByPhone } from '@/lib/orders';
 
-export const metadata = { title: 'Track an order' };
+export const metadata = { title: 'Track an order', robots: { index: false } };
 
 export default async function TrackPage({ searchParams }: { searchParams: Promise<{ phone?: string }> }) {
   const { phone } = await searchParams;

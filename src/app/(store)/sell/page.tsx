@@ -1,10 +1,24 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { SellView } from '@/components/sell-view';
 import { StoreIcon } from '@/components/icons';
+import { OG_IMAGE } from '@/lib/seo';
 
-export const metadata = { title: 'Become a Seller' };
+export const metadata: Metadata = {
+  title: 'Become a Seller',
+  description: 'Sell groceries, fashion, drinks, electronics and more on CityMarket. Apply online, get help with photos and pricing, and get paid every week.',
+  alternates: { canonical: '/sell' },
+  openGraph: {
+    type: 'website',
+    siteName: 'CityMarket',
+    url: '/sell',
+    title: 'Become a Seller',
+    images: [OG_IMAGE],
+  },
+  twitter: { card: 'summary_large_image', title: 'Become a Seller', images: [OG_IMAGE.url] },
+};
 
 export default async function SellPage() {
   const locale = await getLocale();

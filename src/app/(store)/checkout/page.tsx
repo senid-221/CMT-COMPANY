@@ -5,7 +5,7 @@ import { getMarket } from '@/lib/market';
 import { paymentConfig } from '@/lib/payments';
 import { CheckoutView } from '@/components/checkout-view';
 
-export const metadata = { title: 'Checkout' };
+export const metadata = { title: 'Checkout', robots: { index: false } };
 
 export default async function CheckoutPage() {
   const [locale, customer, market] = await Promise.all([getLocale(), getCustomer(), getMarket()]);

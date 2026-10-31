@@ -1,15 +1,22 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getLocale } from '@/lib/locale';
 import { getMarket } from '@/lib/market';
 import { t, type Locale } from '@/lib/i18n';
 import { getCategories, getDeals, getFeatured, getProducts, getProductsByHandles } from '@/lib/catalog';
 import { getContent, pickText } from '@/lib/content';
+import { absoluteUrl, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { FREE_DELIVERY_FROM_CENTS } from '@/lib/pricing';
 import { formatMoney } from '@/lib/money';
 import { CategoryTiles, FreeDeliveryNote, ProductGrid, ProductRail } from '@/components/shop-ui';
 import { HeroSlider, type HeroSlide } from '@/components/hero-slider';
 import { CouponAds } from '@/components/coupon-ads';
+import { JsonLd } from '@/components/json-ld';
 import { getActiveCoupons } from '@/lib/coupons';
+
+export const metadata: Metadata = {
+  alternates: { canonical: absoluteUrl('/') },
+};
 
 async function heroCopy(locale: Locale) {
   const content = await getContent();
@@ -76,6 +83,9 @@ export default async function HomePage() {
 
   return (
     <div className="shell space-y-10 py-8">
+      <JsonLd data={websiteJsonLd()} />
+      <JsonLd data={organizationJsonLd()} />
+      <h1 className="sr-only">CityMarket — groceries, beauty, drinks, fashion and electronics delivered</h1>
       <HeroSlider
         slides={slides}
         labels={slides.map((_, i) => t(locale, 'rail.slide', { n: i + 1, total: slides.length }))}

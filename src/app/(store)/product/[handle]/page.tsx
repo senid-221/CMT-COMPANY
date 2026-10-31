@@ -3,22 +3,39 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, toUnits } from '@/lib/money';
 import { getMarket } from '@/lib/market';
 import { getProduct, getRelated, localizedName } from '@/lib/catalog';
 import { getApprovedReviews, reviewSummary } from '@/lib/reviews';
+import { absoluteUrl, breadcrumbJsonLd, clampText } from '@/lib/seo';
 import { ProductRail } from '@/components/shop-ui';
 import { Rail } from '@/components/rail';
+import { JsonLd } from '@/components/json-ld';
 import { AddToCart } from '@/components/add-to-cart';
 import { ReviewForm } from '@/components/review-form';
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params;
   const [product, market] = await Promise.all([getProduct(handle), getMarket()]);
-  if (!product) return { title: 'Product not found' };
+  if (!product) return { title: 'Product not found', robots: { index: false } };
+  const path = `/product/${product.handle}`;
+  const description = clampText(
+    product.description?.trim() ||
+      `Buy ${product.name} (${product.unit}) on CityMarket for ${formatMoney(product.priceCents, 'en', market)}, delivered with cash on delivery.`,
+  );
   return {
     title: product.name,
-    description: product.description ?? `${product.name} — ${product.unit}, ${formatMoney(product.priceCents, 'en', market)}`,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: 'website',
+      siteName: 'CityMarket',
+      url: path,
+      title: product.name,
+      description,
+      images: [{ url: product.image, alt: product.name }],
+    },
+    twitter: { card: 'summary', title: product.name, description, images: [product.image] },
   };
 }
 
@@ -35,8 +52,40 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
   const lowStock = product.stock > 0 && product.stock <= 10;
   const dateFormat = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-US', { dateStyle: 'medium' });
 
+  const path = `/product/${product.handle}`;
+  const schemaPrice = market.currency === 'USD' ? Number((product.priceCents / 100).toFixed(2)) : toUnits(product.priceCents, market);
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    image: [absoluteUrl(product.image)],
+    description: product.description?.trim() || `${product.name} — ${product.unit}`,
+    sku: product.handle,
+    category: product.category.name,
+    brand: { '@type': 'Brand', name: 'CityMarket' },
+    offers: {
+      '@type': 'Offer',
+      url: absoluteUrl(path),
+      priceCurrency: market.currency,
+      price: schemaPrice,
+      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: { '@type': 'Organization', name: 'CityMarket' },
+    },
+    ...(summary.count
+      ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: summary.average, reviewCount: summary.count } }
+      : {}),
+  };
+  const productBreadcrumbs = breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: product.category.name, path: `/category/${product.category.handle}` },
+    { name: product.name, path },
+  ]);
+
   return (
     <div className="shell py-8">
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={productBreadcrumbs} />
       <Link href="/shop" className="mb-4 inline-block text-sm font-semibold text-brand hover:underline">
         ← {t(locale, 'product.backToShop')}
       </Link>

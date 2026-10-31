@@ -3,7 +3,7 @@ import { getMarket } from '@/lib/market';
 import { t } from '@/lib/i18n';
 import { SavedView } from '@/components/saved-view';
 
-export const metadata = { title: 'Saved items' };
+export const metadata = { title: 'Saved items', robots: { index: false } };
 
 export default async function SavedPage() {
   const [locale, market] = await Promise.all([getLocale(), getMarket()]);

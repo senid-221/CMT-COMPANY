@@ -3,7 +3,7 @@ import { getMarket } from '@/lib/market';
 import { t } from '@/lib/i18n';
 import { OrdersView } from '@/components/orders-view';
 
-export const metadata = { title: 'My orders' };
+export const metadata = { title: 'My orders', robots: { index: false } };
 
 export default async function OrdersPage() {
   const [locale, market] = await Promise.all([getLocale(), getMarket()]);

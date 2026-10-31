@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Bai_Jamjuree, Plus_Jakarta_Sans } from 'next/font/google';
 import { getLocale } from '@/lib/locale';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { THEME_BOOTSTRAP } from '@/lib/theme';
 import './globals.css';
 
@@ -18,12 +19,29 @@ const jamjuree = Bai_Jamjuree({
   display: 'swap',
 });
 
+const TITLE = 'CityMarket — everyday essentials delivered';
+
 export const metadata: Metadata = {
-  title: { default: 'CityMarket — everyday essentials delivered', template: '%s | CityMarket' },
-  description:
-    'CityMarket is an online marketplace: groceries, beauty, drinks, fashion and electronics from trusted sellers, delivered with cash on delivery.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
-  twitter: { card: 'summary_large_image', title: 'CityMarket — everyday essentials delivered', description: 'An online marketplace with cash on delivery.' },
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
+  title: { default: TITLE, template: '%s | CityMarket' },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    url: `${SITE_URL}/`,
+    locale: 'en_US',
+    alternateLocale: ['fr_FR'],
+    title: TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: { card: 'summary_large_image', title: TITLE, description: SITE_DESCRIPTION },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
+  },
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

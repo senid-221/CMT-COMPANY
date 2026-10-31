@@ -1,4 +1,6 @@
+import type { Metadata } from 'next';
 import type { Locale } from './i18n';
+import { clampText, OG_IMAGE } from './seo';
 
 type Text = { en: string; fr: string };
 export type InfoSection = { heading: Text; paragraphs: Text[] };
@@ -293,3 +295,28 @@ export function infoPage(slug: string) {
 export function infoTitle(page: InfoPage, locale: Locale) {
   return page.title[locale];
 }
+
+/** Page metadata for the static info routes, so each one has its own title, snippet and canonical URL. */
+export function infoMetadata(slug: string): Metadata {
+  const page = infoPage(slug);
+  if (!page) return {};
+  return {
+    title: page.title.en,
+    description: clampText(page.intro.en),
+    alternates: { canonical: page.path },
+    openGraph: {
+      type: 'article',
+      url: page.path,
+      title: page.title.en,
+      description: clampText(page.intro.en),
+      images: [OG_IMAGE],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page.title.en,
+      description: clampText(page.intro.en),
+      images: [OG_IMAGE.url],
+    },
+  };
+}
+
