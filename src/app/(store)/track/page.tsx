@@ -3,13 +3,14 @@ import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { statusKey } from '@/lib/order-labels';
 import { formatMoney } from '@/lib/money';
+import { getMarket } from '@/lib/market';
 import { findOrdersByPhone } from '@/lib/orders';
 
 export const metadata = { title: 'Track an order' };
 
 export default async function TrackPage({ searchParams }: { searchParams: Promise<{ phone?: string }> }) {
   const { phone } = await searchParams;
-  const locale = await getLocale();
+  const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const clean = (phone ?? '').trim();
   const orders = clean.length >= 8 ? await findOrdersByPhone(clean) : [];
 
@@ -42,7 +43,7 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
                 {t(locale, statusKey(order.status))}
               </p>
             </div>
-            <span className="font-display font-bold text-brand">{formatMoney(order.totalCents, locale)}</span>
+            <span className="font-display font-bold text-brand">{formatMoney(order.totalCents, locale, market)}</span>
           </Link>
         ))}
       </div>

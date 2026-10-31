@@ -2,11 +2,12 @@ import Link from 'next/link';
 import type { Locale } from '@/lib/i18n';
 import { t } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
+import type { Market } from '@/lib/markets';
 import { FREE_DELIVERY_FROM_CENTS } from '@/lib/pricing';
 import { localizedName, type CategoryRow, type ProductRow, type SortKey } from '@/lib/catalog';
 import { ProductCard } from '@/components/product-card';
 
-export function ProductGrid({ products, locale }: { products: ProductRow[]; locale: Locale }) {
+export function ProductGrid({ products, locale, market }: { products: ProductRow[]; locale: Locale; market: Market }) {
   if (!products.length) {
     return (
       <div className="card p-8 text-center text-muted">
@@ -21,7 +22,7 @@ export function ProductGrid({ products, locale }: { products: ProductRow[]; loca
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {products.map((p) => (
-        <ProductCard key={`${p.handle}`} product={p} locale={locale} />
+        <ProductCard key={`${p.handle}`} product={p} locale={locale} market={market} />
       ))}
     </div>
   );
@@ -116,10 +117,10 @@ export function Filters({
   );
 }
 
-export function FreeDeliveryNote({ locale, note }: { locale: Locale; note?: string }) {
+export function FreeDeliveryNote({ locale, market, note }: { locale: Locale; market: Market; note?: string }) {
   return (
     <p className="rounded-full bg-surface px-4 py-2 text-sm text-ink/70">
-      {note?.trim() || t(locale, 'cart.freeDelivery', { amount: formatMoney(FREE_DELIVERY_FROM_CENTS, locale) })}
+      {note?.trim() || t(locale, 'cart.freeDelivery', { amount: formatMoney(FREE_DELIVERY_FROM_CENTS, locale, market) })}
     </p>
   );
 }

@@ -3,13 +3,16 @@
 @theme {
   --color-brand: #297357;
   --color-brand-dark: #1f5a45;
+  --color-brand-solid: #297357;
+  --color-brand-solid-hover: #1f5a45;
   --color-lime: #82cc15;
-  --color-amber: #ffbe00;
+  --color-amber: #8a6100;
   --color-purple: #7d25f3;
-  --color-info: #3381ff;
+  --color-info: #1d5fc9;
 
   --color-ink: #14181b;
-  --color-muted: #9aa1ac;
+  --color-label: #3f4650;
+  --color-muted: #616873;
   --color-line: #eaebf1;
   --color-alternate: #e5e7eb;
   --color-canvas: #ffffff;
@@ -22,9 +25,9 @@
   --color-action-fg: #ffffff;
   --color-lime-ink: #14181b;
 
-  --color-success: #1eb414;
-  --color-warning: #ffad19;
-  --color-danger: #ff5963;
+  --color-success: #0f7a0a;
+  --color-warning: #aa4e00;
+  --color-danger: #c22836;
   --color-whatsapp: #25d366;
   --color-whatsapp-dark: #1ebe5b;
 
@@ -63,11 +66,20 @@ html.dark {
   --color-line: #2b343a;
   --color-alternate: #33404a;
   --color-ink: #e9eef2;
-  --color-muted: #93a0aa;
-  --color-brand: #3f9a74;
-  --color-brand-dark: #348562;
+  --color-label: #cfd8de;
+  --color-muted: #9fb0bc;
+  --color-brand: #4aa883;
+  --color-brand-dark: #2e8060;
+  --color-brand-solid: #297357;
+  --color-brand-solid-hover: #2e8060;
   --color-action: #e9eef2;
   --color-action-fg: #14181b;
+  --color-success: #1eb414;
+  --color-warning: #ffad19;
+  --color-danger: #ff5963;
+  --color-amber: #ffbe00;
+  --color-info: #6ba4ff;
+  --color-purple: #a878ff;
 }
 
 body {
@@ -122,12 +134,16 @@ h4 {
 }
 
 .btn-primary {
-  background: var(--color-brand);
+  background: var(--color-brand-solid);
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: var(--color-brand-dark);
+  background: var(--color-brand-solid-hover);
+}
+
+html.dark .bg-brand {
+  background-color: var(--color-brand-solid);
 }
 
 .btn-ghost {
@@ -159,11 +175,16 @@ h4 {
   border-color: var(--color-brand);
 }
 
+.field::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+
 .label {
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-muted);
+  color: var(--color-label);
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import { formatMoney, formatXof } from '@/lib/money';
+import { formatMoney, formatUnits } from '@/lib/money';
+import { isCurrency } from '@/lib/markets';
 import { ORDER_STATUSES } from '@/lib/pricing';
 import { setOrderStatus } from '@/app/admin/actions';
 import { BackLink, Flash, StatusPill, formatDate } from '@/components/admin/ui';
@@ -14,8 +15,9 @@ const STATUS_LABEL: Record<string, string> = {
   delivered: 'Delivered',
   cancelled: 'Cancelled',
 };
-const PAYMENT_LABEL: Record<string, string> = { cod: 'Cash on delivery', card: 'Card', mtn: 'MTN Mobile Money', orange: 'Orange Money', wave: 'Wave' };
-const PAYMENT_STATUS_LABEL: Record<string, string> = { unpaid: 'Pay on delivery', pending: 'Awaiting payment', paid: 'Paid', failed: 'Payment failed' };
+const PAYMENT_LABEL: Record<string, string> = { cod: 'Cash on delivery', card: 'Card', mtn: 'MTN Mobile Money', orange: 'Orange Money', wave: 'Wave', bank: 'Bank transfer' };
+const PAYMENT_STATUS_LABEL: Record<string, string> = { unpaid: 'Payment due', pending: 'Awaiting payment', paid: 'Paid', failed: 'Payment failed' };
+const MARKET_LABEL: Record<string, string> = { RW: 'Rwanda (RWF)', SN: 'Senegal (XOF)', INT: 'International (USD)' };
 
 export default async function AdminOrderPage({
   params,
@@ -35,8 +37,8 @@ export default async function AdminOrderPage({
   const charged =
     order.paymentAmount === null
       ? null
-      : order.paymentCurrency === 'XOF'
-        ? formatXof(order.paymentAmount, 'en')
+      : isCurrency(order.paymentCurrency)
+        ? formatUnits(order.paymentAmount, 'en', order.paymentCurrency)
         : formatMoney(order.paymentAmount, 'en');
 
   return (
@@ -123,6 +125,7 @@ export default async function AdminOrderPage({
             <p className="text-sm text-muted">
               Payment: {PAYMENT_LABEL[order.paymentMethod] ?? order.paymentMethod} · {PAYMENT_STATUS_LABEL[order.paymentStatus] ?? order.paymentStatus}
             </p>
+            {order.market ? <p className="text-sm text-muted">Market: {MARKET_LABEL[order.market] ?? order.market}</p> : null}
             {charged ? (
               <p className="text-sm text-muted">
                 Charged {charged}

@@ -71,6 +71,7 @@ model Order {
   paymentRef    String?     @unique
   paymentTransactionId String?
   paymentCurrency String?
+  market        String?
   paymentAmount Int?
   paidAt        DateTime?
   subtotalCents Int

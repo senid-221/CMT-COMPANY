@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getLocale } from '@/lib/locale';
-import { t } from '@/lib/i18n';
-import { formatMoney, formatXof } from '@/lib/money';
+import { t, type Locale } from '@/lib/i18n';
+import { formatMoney, formatUnits } from '@/lib/money';
 import { findOrder } from '@/lib/orders';
+import { bankDetails, getMarket, isCurrency } from '@/lib/market';
 import { Logo } from '@/components/logo';
 import { slotKey, statusKey, paymentMethodKey, paymentStatusKey } from '@/lib/order-labels';
 import { isPaymentMethod, isOnlineMethod, paymentStatusValue, type PaymentStatus } from '@/lib/payment-methods';
@@ -18,6 +19,21 @@ const PAY_PILL: Record<PaymentStatus, string> = {
   unpaid: 'bg-surface-alt text-muted',
 };
 
+function BankDetails({ locale }: { locale: Locale }) {
+  const bank = bankDetails();
+  if (!bank) return null;
+  return (
+    <dl className="mt-3 grid gap-1 rounded-xl bg-surface-alt p-4 text-sm sm:grid-cols-[auto_1fr]">
+      <dt className="text-muted">{t(locale, 'order.bankName')}</dt>
+      <dd className="font-medium">{bank.bank}</dd>
+      <dt className="text-muted">{t(locale, 'order.bankAccount')}</dt>
+      <dd className="font-mono font-medium">{bank.account}</dd>
+      <dt className="text-muted">{t(locale, 'order.bankHolder')}</dt>
+      <dd className="font-medium">{bank.holder}</dd>
+    </dl>
+  );
+}
+
 export default async function OrderPage({
   params,
   searchParams,
@@ -27,6 +43,7 @@ export default async function OrderPage({
 }) {
   const [{ number }, query] = await Promise.all([params, searchParams]);
   const locale = await getLocale();
+  const market = await getMarket();
   const order = await findOrder(number);
   if (!order) notFound();
 
@@ -43,11 +60,9 @@ export default async function OrderPage({
   const showPaid = paid && query.paid === '1';
   const showPayFailed = !paid && (query.pay === 'failed' || query.paid === '0' || paymentStatus === 'failed');
   const chargedAmount =
-    order.paymentAmount && order.paymentCurrency === 'XOF'
-      ? formatXof(order.paymentAmount, locale)
-      : order.paymentAmount && order.paymentCurrency === 'USD'
-        ? formatMoney(order.paymentAmount, locale)
-        : formatMoney(order.totalCents, locale);
+    order.paymentAmount && isCurrency(order.paymentCurrency)
+      ? formatUnits(order.paymentAmount, locale, order.paymentCurrency)
+      : formatMoney(order.totalCents, locale, market);
   const canRetry = online && !paid && order.status !== 'cancelled' && methodAvailable(paymentMethod);
 
   return (
@@ -71,7 +86,11 @@ export default async function OrderPage({
           <Logo size="sm" />
           <h1 className="mt-3 font-display text-2xl font-bold text-brand">{t(locale, 'order.thanks')}</h1>
           <p className="mt-2 text-ink/80">
-            {online ? t(locale, 'order.payPending') : t(locale, 'order.payOnDelivery', { amount: formatMoney(order.totalCents, locale) })}
+            {online
+              ? t(locale, 'order.payPending')
+              : paymentMethod === 'bank'
+                ? t(locale, 'order.payBank', { amount: chargedAmount })
+                : t(locale, 'order.payOnDelivery', { amount: chargedAmount })}
           </p>
         </div>
       ) : null}
@@ -102,7 +121,7 @@ export default async function OrderPage({
                 <span className="text-ink/80">
                   {item.quantity} × {item.productName} <span className="text-muted">({item.unit})</span>
                 </span>
-                <span className="font-medium">{formatMoney(item.lineTotalCents, locale)}</span>
+                <span className="font-medium">{formatMoney(item.lineTotalCents, locale, market)}</span>
               </li>
             ))}
           </ul>
@@ -111,17 +130,17 @@ export default async function OrderPage({
         <div className="space-y-1 border-t border-line pt-4 text-sm">
           <div className="flex justify-between">
             <span className="text-ink/70">{t(locale, 'cart.subtotal')}</span>
-            <span>{formatMoney(order.subtotalCents, locale)}</span>
+            <span>{formatMoney(order.subtotalCents, locale, market)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-ink/70">
               {t(locale, 'cart.delivery')} · {t(locale, slotKey(order.slot))}
             </span>
-            <span>{formatMoney(order.deliveryFeeCents, locale)}</span>
+            <span>{formatMoney(order.deliveryFeeCents, locale, market)}</span>
           </div>
           <div className="flex justify-between pt-1 font-display text-base font-bold">
             <span>{t(locale, 'cart.total')}</span>
-            <span className="text-brand">{formatMoney(order.totalCents, locale)}</span>
+            <span className="text-brand">{formatMoney(order.totalCents, locale, market)}</span>
           </div>
         </div>
 
@@ -136,6 +155,7 @@ export default async function OrderPage({
             </span>
           </div>
           {online && order.paymentAmount ? <p className="mt-1 text-xs text-muted">{t(locale, 'checkout.charged', { amount: chargedAmount })}</p> : null}
+          {paymentMethod === 'bank' && !paid ? <BankDetails locale={locale} /> : null}
           {paid && order.paymentRef ? (
             <p className="mt-1 text-xs text-muted">
               {t(locale, 'order.reference')}: <span className="font-mono">{order.paymentRef}</span>

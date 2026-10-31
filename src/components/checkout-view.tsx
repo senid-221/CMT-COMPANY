@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { t, type Locale, type MessageKey } from '@/lib/i18n';
 import { slotKey } from '@/lib/order-labels';
-import { formatMoney, formatXof } from '@/lib/money';
+import { formatMoney } from '@/lib/money';
+import { offeredRails, type Currency, type Market } from '@/lib/markets';
 import { DELIVERY_SLOTS, type Slot } from '@/lib/pricing';
 import type { PaymentMethod } from '@/lib/payment-methods';
 import { localizedName } from '@/lib/catalog';
@@ -14,16 +15,24 @@ import { recordOrder } from '@/lib/local-orders';
 import { usePricedCart } from '@/components/cart-view';
 import { GoogleButton } from '@/components/auth/google-button';
 
+export type CheckoutPayments = {
+  card: boolean;
+  rails: Record<'card' | 'mtn' | 'orange' | 'wave', boolean>;
+  rates: { RWF: number; XOF: number };
+};
+
 export function CheckoutView({
   locale,
   customer,
   googleEnabled,
   payments,
+  market,
 }: {
   locale: Locale;
   customer: { name: string; email: string; phone: string } | null;
   googleEnabled: boolean;
-  payments: { card: boolean; mobile: boolean; xofRate: number };
+  payments: CheckoutPayments;
+  market: Market;
 }) {
   const router = useRouter();
   const { priced, subtotalCents, itemCount, feeFor } = usePricedCart(locale);
@@ -34,7 +43,21 @@ export function CheckoutView({
 
   const deliveryFee = feeFor(slot);
   const total = subtotalCents + deliveryFee;
-  const chargedXof = Math.max(1, Math.round((total / 100) * payments.xofRate));
+
+  /** Each rail is billed in the currency its network actually settles in. */
+  function currencyFor(chosen: PaymentMethod): Currency {
+    if (chosen === 'card') return 'USD';
+    if (chosen === 'mtn') return 'RWF';
+    if (chosen === 'orange' || chosen === 'wave') return 'XOF';
+    return market.currency;
+  }
+
+  function pricesFor(chosen: PaymentMethod) {
+    const currency = currencyFor(chosen);
+    return { currency, ratePerUsd: currency === 'USD' ? 1 : payments.rates[currency === 'RWF' ? 'RWF' : 'XOF'] };
+  }
+
+  const offered = offeredRails(market.methods, payments.rails);
 
   if (!priced.length) {
     return (
@@ -101,9 +124,9 @@ export function CheckoutView({
   }
 
   const actionLabel =
-    method === 'cod'
-      ? `${t(locale, 'checkout.place')} · ${formatMoney(total, locale)}`
-      : `${t(locale, 'checkout.pay')} · ${method === 'card' ? formatMoney(total, locale) : formatXof(chargedXof, locale)}`;
+    method === 'cod' || method === 'bank'
+      ? `${t(locale, 'checkout.place')} · ${formatMoney(total, locale, market)}`
+      : `${t(locale, 'checkout.pay')} · ${formatMoney(total, locale, pricesFor(method))}`;
 
   return (
     <div className="shell grid gap-6 py-8 lg:grid-cols-[1fr_360px]">
@@ -120,7 +143,7 @@ export function CheckoutView({
           ) : null}
           <div className="grid gap-3 sm:grid-cols-2">
             <Field name="customerName" label={t(locale, 'checkout.name')} required autoComplete="name" defaultValue={customer?.name} />
-            <Field name="phone" label={t(locale, 'checkout.phone')} required type="tel" autoComplete="tel" placeholder="+250 7X XXX XXXX" defaultValue={customer?.phone} />
+            <Field name="phone" label={t(locale, 'checkout.phone')} required type="tel" autoComplete="tel" placeholder={market.phoneCode ? `${market.phoneCode} XX XXX XXX` : undefined} defaultValue={customer?.phone} />
           </div>
           <Field name="email" label={t(locale, 'checkout.email')} type="email" autoComplete="email" defaultValue={customer?.email} />
         </div>
@@ -147,40 +170,33 @@ export function CheckoutView({
                 <input type="radio" name="slot" value={value} checked={slot === value} onChange={() => setSlot(value)} className="accent-[#297357]" />
                 <span className="font-medium">{t(locale, slotKey(value))}</span>
               </span>
-              <span className="text-sm text-muted">{formatMoney(feeFor(value), locale)}</span>
+              <span className="text-sm text-muted">{formatMoney(feeFor(value), locale, market)}</span>
             </label>
           ))}
         </div>
 
         <div className="space-y-2">
           <h2 className="font-display font-semibold text-brand">{t(locale, 'checkout.payment')}</h2>
-          <PaymentOption method="cod" selected={method === 'cod'} onSelect={() => setMethod('cod')} label={t(locale, 'pay.method.cod')} />
-          <PaymentOption
-            method="card"
-            selected={method === 'card'}
-            enabled={payments.card}
-            onSelect={() => setMethod('card')}
-            label={t(locale, 'pay.method.card')}
-            hint={t(locale, 'checkout.cardHint')}
-          />
-          {MOMO_LABELS.map(({ method: network, key }) => (
+          {offered.map((chosen) => (
             <PaymentOption
-              key={network}
-              method={network}
-              selected={method === network}
-              enabled={payments.mobile}
-              onSelect={() => setMethod(network)}
-              label={t(locale, key)}
-              hint={t(locale, 'checkout.momoHint')}
+              key={chosen}
+              method={chosen}
+              selected={method === chosen}
+              onSelect={() => setMethod(chosen)}
+              label={t(locale, PAYMENT_LABEL[chosen])}
+              hint={PAYMENT_HINTS[chosen] ? t(locale, PAYMENT_HINTS[chosen]) : undefined}
             />
           ))}
-          {payments.card ? null : <p className="pt-1 text-xs text-muted">{t(locale, 'checkout.onlineUnavailable')}</p>}
-          {method !== 'cod' && method !== 'card' && payments.mobile ? (
+          {offered.length === 1 ? <p className="pt-1 text-xs text-muted">{t(locale, 'checkout.onlineUnavailable')}</p> : null}
+          {method === 'cod' || method === 'bank' || !payments.rails[method as 'card' | 'mtn' | 'orange' | 'wave'] ? null : (
             <p className="pt-1 text-xs font-medium text-brand">
-              {t(locale, 'checkout.charged', { amount: formatXof(chargedXof, locale) })} ·{' '}
-              {t(locale, 'checkout.rate', { rate: new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US').format(payments.xofRate) })}
+              {t(locale, 'checkout.charged', { amount: formatMoney(total, locale, pricesFor(method)) })} ·{' '}
+              {t(locale, 'checkout.rate', {
+                rate: new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US').format(pricesFor(method).ratePerUsd),
+                currency: currencyFor(method),
+              })}
             </p>
-          ) : null}
+          )}
           <PaymentSteps locale={locale} method={method} />
         </div>
 
@@ -199,7 +215,7 @@ export function CheckoutView({
               <span className="min-w-0 truncate text-ink/80">
                 {l.qty} × {localizedName(l, locale)}
               </span>
-              <span className="shrink-0 font-medium">{formatMoney(l.priceCents * l.qty, locale)}</span>
+              <span className="shrink-0 font-medium">{formatMoney(l.priceCents * l.qty, locale, market)}</span>
             </li>
           ))}
         </ul>
@@ -208,15 +224,15 @@ export function CheckoutView({
             <span>
               {t(locale, 'cart.subtotal')} ({t(locale, 'cart.items', { n: itemCount })})
             </span>
-            <span>{formatMoney(subtotalCents, locale)}</span>
+            <span>{formatMoney(subtotalCents, locale, market)}</span>
           </div>
           <div className="flex justify-between">
             <span>{t(locale, 'cart.delivery')}</span>
-            <span>{formatMoney(deliveryFee, locale)}</span>
+            <span>{formatMoney(deliveryFee, locale, market)}</span>
           </div>
           <div className="flex justify-between pt-1 font-display text-base font-bold">
             <span>{t(locale, 'cart.total')}</span>
-            <span className="text-brand">{formatMoney(total, locale)}</span>
+            <span className="text-brand">{formatMoney(total, locale, market)}</span>
           </div>
         </div>
       </aside>
@@ -224,11 +240,13 @@ export function CheckoutView({
   );
 }
 
-const MOMO_LABELS: { method: 'mtn' | 'orange' | 'wave'; key: MessageKey }[] = [
-  { method: 'mtn', key: 'pay.method.mtn' },
-  { method: 'orange', key: 'pay.method.orange' },
-  { method: 'wave', key: 'pay.method.wave' },
-];
+const PAYMENT_HINTS: Partial<Record<PaymentMethod, MessageKey>> = {
+  card: 'checkout.cardHint',
+  mtn: 'checkout.momoHint',
+  orange: 'checkout.momoHint',
+  wave: 'checkout.momoHint',
+  bank: 'checkout.bankHint',
+};
 
 const PAYMENT_LABEL: Record<PaymentMethod, MessageKey> = {
   cod: 'pay.method.cod',
@@ -236,6 +254,7 @@ const PAYMENT_LABEL: Record<PaymentMethod, MessageKey> = {
   mtn: 'pay.method.mtn',
   orange: 'pay.method.orange',
   wave: 'pay.method.wave',
+  bank: 'pay.method.bank',
 };
 
 const PAYMENT_STEPS: Record<PaymentMethod, MessageKey[]> = {
@@ -244,6 +263,7 @@ const PAYMENT_STEPS: Record<PaymentMethod, MessageKey[]> = {
   mtn: ['pay.steps.mtn.1', 'pay.steps.mtn.2', 'pay.steps.mtn.3'],
   orange: ['pay.steps.orange.1', 'pay.steps.orange.2', 'pay.steps.orange.3'],
   wave: ['pay.steps.wave.1', 'pay.steps.wave.2', 'pay.steps.wave.3'],
+  bank: ['pay.steps.bank.1', 'pay.steps.bank.2', 'pay.steps.bank.3'],
 };
 
 function PaymentSteps({ locale, method }: { locale: Locale; method: PaymentMethod }) {
@@ -267,7 +287,7 @@ function PaymentSteps({ locale, method }: { locale: Locale; method: PaymentMetho
           ))}
         </ol>
       )}
-      {method === 'cod' ? null : (
+      {method === 'cod' || method === 'bank' ? null : (
         <p className="mt-3 flex items-start gap-2 rounded-lg bg-brand/5 px-3 py-2 text-xs font-medium text-brand">
           <svg viewBox="0 0 24 24" className="mt-px h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
             <rect x="4" y="10" width="16" height="10" rx="2" />
@@ -285,20 +305,18 @@ function PaymentOption({
   label,
   hint,
   selected,
-  enabled = true,
   onSelect,
 }: {
   method: PaymentMethod;
   label: string;
   hint?: string;
   selected: boolean;
-  enabled?: boolean;
   onSelect: () => void;
 }) {
   return (
     <label
       className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 ${
-        !enabled ? 'cursor-not-allowed border-line opacity-55' : selected ? 'border-brand bg-brand/5' : 'border-line hover:border-brand/40'
+        selected ? 'border-brand bg-brand/5' : 'border-line hover:border-brand/40'
       }`}
     >
       <input
@@ -306,7 +324,6 @@ function PaymentOption({
         name="paymentMethod"
         value={method}
         checked={selected}
-        disabled={!enabled}
         onChange={onSelect}
         className="accent-[#297357]"
       />
@@ -344,6 +361,17 @@ function PaymentMark({ method }: { method: PaymentMethod }) {
       <span className={`${LOGO_CHIP} w-20 gap-1.5 px-2`}>
         <img src="/media/payments/visa.svg" alt="" width={1000} height={325} className="h-3 w-auto" />
         <img src="/media/payments/mastercard.svg" alt="" width={1000} height={618} className="h-4 w-auto" />
+      </span>
+    );
+  }
+  if (method === 'bank') {
+    return (
+      <span className="flex h-9 w-12 shrink-0 items-center justify-center rounded-md bg-brand/10 text-brand">
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+          <path d="M3 9.5 12 4l9 5.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5.5 9.5v8M10 9.5v8M14 9.5v8M18.5 9.5v8" strokeLinecap="round" />
+          <path d="M3 20.5h18" strokeLinecap="round" />
+        </svg>
       </span>
     );
   }

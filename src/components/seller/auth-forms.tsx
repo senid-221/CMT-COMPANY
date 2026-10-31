@@ -6,8 +6,8 @@ import type { SellerAuthState } from '@/app/seller/actions';
 import { loginSeller, registerSeller } from '@/app/seller/actions';
 
 const INPUT =
-  'h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20';
-const LABEL = 'mb-1 block text-sm font-semibold text-slate-700';
+  'h-11 w-full rounded-xl border border-line bg-canvas px-3 text-sm text-ink placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20';
+const LABEL = 'mb-1 block text-sm font-semibold text-label';
 
 const LOGIN_ERRORS: Record<string, string> = {
   invalid: 'Wrong email or password.',
@@ -27,7 +27,7 @@ const REGISTER_ERRORS: Record<string, string> = {
 function ErrorNote({ message }: { message: string }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+    <p role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
       {message}
     </p>
   );
@@ -53,7 +53,7 @@ export function SellerLoginForm() {
       <button type="submit" disabled={pending} className="btn btn-primary h-11 w-full disabled:opacity-60">
         {pending ? 'Signing in…' : 'Sign in to seller portal'}
       </button>
-      <p className="pt-1 text-center text-sm text-slate-600">
+      <p className="pt-1 text-center text-sm text-muted">
         New seller?{' '}
         <Link href="/seller/register" className="font-semibold text-brand hover:underline">
           Create an account
@@ -90,13 +90,13 @@ export function SellerRegisterForm() {
           Password
         </label>
         <input id="seller-password" name="password" type="password" required minLength={8} autoComplete="new-password" className={INPUT} />
-        <p className="mt-1 text-xs text-slate-500">At least 8 characters. You can publish products right away.</p>
+        <p className="mt-1 text-xs text-muted">At least 8 characters. You can publish products right away.</p>
       </div>
       <ErrorNote message={state.error ? REGISTER_ERRORS[state.error] ?? REGISTER_ERRORS.failed : ''} />
       <button type="submit" disabled={pending} className="btn btn-primary h-11 w-full disabled:opacity-60">
         {pending ? 'Creating account…' : 'Create seller account'}
       </button>
-      <p className="pt-1 text-center text-sm text-slate-600">
+      <p className="pt-1 text-center text-sm text-muted">
         Already selling here?{' '}
         <Link href="/seller/login" className="font-semibold text-brand hover:underline">
           Sign in

@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
+import { getMarket } from '@/lib/market';
 import { getProduct, getRelated, localizedName } from '@/lib/catalog';
 import { getApprovedReviews, reviewSummary } from '@/lib/reviews';
 import { ProductGrid } from '@/components/shop-ui';
@@ -12,17 +13,17 @@ import { ReviewForm } from '@/components/review-form';
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params;
-  const product = await getProduct(handle);
+  const [product, market] = await Promise.all([getProduct(handle), getMarket()]);
   if (!product) return { title: 'Product not found' };
   return {
     title: product.name,
-    description: product.description ?? `${product.name} — ${product.unit}, ${formatMoney(product.priceCents)}`,
+    description: product.description ?? `${product.name} — ${product.unit}, ${formatMoney(product.priceCents, 'en', market)}`,
   };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
-  const locale = await getLocale();
+  const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const product = await getProduct(handle);
   if (!product) notFound();
 
@@ -56,10 +57,10 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
           </div>
 
           <div className="flex flex-wrap items-baseline gap-3">
-            <p className="font-display text-3xl font-bold text-brand">{formatMoney(product.priceCents, locale)}</p>
+            <p className="font-display text-3xl font-bold text-brand">{formatMoney(product.priceCents, locale, market)}</p>
             {product.compareAtCents ? (
               <>
-                <s className="text-lg text-muted">{formatMoney(product.compareAtCents, locale)}</s>
+                <s className="text-lg text-muted">{formatMoney(product.compareAtCents, locale, market)}</s>
                 <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-bold text-brand">
                   -{Math.round((1 - product.priceCents / product.compareAtCents) * 100)}%
                 </span>
@@ -129,7 +130,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
       {related.length ? (
         <section className="mt-10 space-y-4">
           <h2 className="font-display text-xl font-semibold">{t(locale, 'product.related')}</h2>
-          <ProductGrid products={related} locale={locale} />
+          <ProductGrid products={related} locale={locale} market={market} />
         </section>
       ) : null}
     </div>

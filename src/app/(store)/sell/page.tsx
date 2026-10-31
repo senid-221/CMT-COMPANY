@@ -27,7 +27,7 @@ export default async function SellPage() {
           ))}
         </ul>
 
-        <div className="mt-8 rounded-2xl border border-line bg-white p-4">
+        <div className="mt-8 rounded-2xl border border-line bg-canvas p-4">
           <p className="text-sm text-ink/75">{t(locale, 'sell.portalHint')}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link href="/seller/register" className="btn btn-primary text-sm">

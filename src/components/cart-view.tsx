@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { addQty, clearCart, setQty, useCartLines } from '@/lib/cart';
 import { formatMoney } from '@/lib/money';
+import type { Market } from '@/lib/markets';
 import { FREE_DELIVERY_FROM_CENTS, SLOT_FEE_CENTS, type Slot } from '@/lib/pricing';
 import { t, type Locale } from '@/lib/i18n';
 import { localizedName, type ProductRow } from '@/lib/catalog';
@@ -60,7 +61,7 @@ export function usePricedCart(locale: Locale) {
   return { priced, loading, failed, subtotalCents, itemCount, feeFor, locale, clear: clearCart, change: addQty };
 }
 
-export function CartView({ locale }: { locale: Locale }) {
+export function CartView({ locale, market }: { locale: Locale; market: Market }) {
   const { priced, loading, failed, subtotalCents, itemCount, clear } = usePricedCart(locale);
 
   if (loading && itemCount > 0) {
@@ -98,7 +99,7 @@ export function CartView({ locale }: { locale: Locale }) {
                 {localizedName(line, locale)}
               </Link>
               <p className="text-xs text-muted">
-                {line.unit} · {formatMoney(line.priceCents, locale)}
+                {line.unit} · {formatMoney(line.priceCents, locale, market)}
               </p>
             </div>
             <div className="flex w-full items-center gap-3 sm:w-auto sm:gap-2">
@@ -111,7 +112,7 @@ export function CartView({ locale }: { locale: Locale }) {
                   +
                 </button>
               </div>
-              <div className="min-w-0 flex-1 text-right font-display font-bold sm:w-24 sm:flex-none">{formatMoney(line.priceCents * line.qty, locale)}</div>
+              <div className="min-w-0 flex-1 text-right font-display font-bold sm:w-24 sm:flex-none">{formatMoney(line.priceCents * line.qty, locale, market)}</div>
               <button type="button" onClick={() => setQty(line.handle, 0)} className="shrink-0 text-xs font-semibold text-danger hover:underline">
                 {t(locale, 'cart.remove')}
               </button>
@@ -122,15 +123,15 @@ export function CartView({ locale }: { locale: Locale }) {
 
       <aside className="card h-fit space-y-3 p-5 lg:sticky lg:top-24">
         <h2 className="font-display text-lg font-semibold">{t(locale, 'cart.summary')}</h2>
-        <Row label={t(locale, 'cart.items', { n: itemCount })} value={formatMoney(subtotalCents, locale)} />
+        <Row label={t(locale, 'cart.items', { n: itemCount })} value={formatMoney(subtotalCents, locale, market)} />
         <Row
           label={t(locale, 'cart.delivery')}
-          value={subtotalCents >= FREE_DELIVERY_FROM_CENTS ? '0' : `${formatMoney(SLOT_FEE_CENTS.today, locale)}`}
+          value={subtotalCents >= FREE_DELIVERY_FROM_CENTS ? '0' : `${formatMoney(SLOT_FEE_CENTS.today, locale, market)}`}
         />
         <div className="border-t border-line pt-3">
-          <Row label={t(locale, 'cart.total')} value={formatMoney(subtotalCents + (subtotalCents >= FREE_DELIVERY_FROM_CENTS ? 0 : SLOT_FEE_CENTS.today), locale)} bold />
+          <Row label={t(locale, 'cart.total')} value={formatMoney(subtotalCents + (subtotalCents >= FREE_DELIVERY_FROM_CENTS ? 0 : SLOT_FEE_CENTS.today), locale, market)} bold />
         </div>
-        <p className="text-xs text-muted">{t(locale, 'cart.freeDelivery', { amount: formatMoney(FREE_DELIVERY_FROM_CENTS, locale) })}</p>
+        <p className="text-xs text-muted">{t(locale, 'cart.freeDelivery', { amount: formatMoney(FREE_DELIVERY_FROM_CENTS, locale, market) })}</p>
         <Link href="/checkout" className="btn btn-primary mt-2 w-full">
           {t(locale, 'cart.checkout')}
         </Link>

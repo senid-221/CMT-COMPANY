@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getLocale } from '@/lib/locale';
+import { getMarket } from '@/lib/market';
 import { t, type Locale } from '@/lib/i18n';
 import { getCategories, getDeals, getFeatured, getProducts, getProductsByHandles } from '@/lib/catalog';
 import { getContent, pickText } from '@/lib/content';
@@ -18,7 +19,7 @@ async function heroCopy(locale: Locale) {
 }
 
 export default async function HomePage() {
-  const locale = await getLocale();
+  const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const hero = await heroCopy(locale);
   const [categories, featured, latest, deals] = await Promise.all([
     getCategories(),
@@ -36,7 +37,7 @@ export default async function HomePage() {
           <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">{hero.title}</h1>
           <p className="text-white/85">{hero.text}</p>
           <div className="flex flex-wrap gap-3 pt-2">
-            <Link href={hero.ctaHref} className="btn bg-white text-brand hover:bg-white/90">
+            <Link href={hero.ctaHref} className="btn bg-white text-brand-solid hover:bg-white/90">
               {hero.ctaLabel}
             </Link>
             <Link href="/track" className="btn border border-white/40 text-white hover:bg-white/10">
@@ -77,16 +78,16 @@ export default async function HomePage() {
               {t(locale, 'home.seeDeals')} →
             </Link>
           </div>
-          <ProductGrid products={deals} locale={locale} />
+          <ProductGrid products={deals} locale={locale} market={market} />
         </section>
       ) : null}
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-xl font-semibold">{t(locale, 'home.featured')}</h2>
-          <FreeDeliveryNote locale={locale} note={hero.note} />
+          <FreeDeliveryNote locale={locale} market={market} note={hero.note} />
         </div>
-        <ProductGrid products={featured} locale={locale} />
+        <ProductGrid products={featured} locale={locale} market={market} />
       </section>
 
       <section className="space-y-4">
@@ -96,7 +97,7 @@ export default async function HomePage() {
             {t(locale, 'cart.continue')} →
           </Link>
         </div>
-        <ProductGrid products={latest} locale={locale} />
+        <ProductGrid products={latest} locale={locale} market={market} />
       </section>
     </div>
   );

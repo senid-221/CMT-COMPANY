@@ -1,13 +1,18 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from './db';
-import { isOnlineMethod, type OnlinePaymentMethod } from './payment-methods';
+import { isOnlineMethod, type OnlinePaymentMethod, type PaymentMethod } from './payment-methods';
+import { bankDetails, ratePerUsd } from './market';
+import { amountMatches, apiAmount, chargeFor as localChargeFor, paymentOptions, type Charge } from './charge';
 
 const DEFAULT_API_BASE = 'https://api.flutterwave.com';
 const CUSTOMER_EMAIL_FALLBACK = 'orders@citymarket.rw';
 
-export type Charge = { currency: 'USD' | 'XOF'; amount: number };
-
-export type PaymentConfig = { card: boolean; mobile: boolean; xofRate: number };
+/** Which rails Flutterwave can actually take money through for this deployment. */
+export type PaymentConfig = {
+  card: boolean;
+  rails: Record<OnlinePaymentMethod, boolean>;
+  rates: { RWF: number; XOF: number };
+};
 
 export type VerifiedTransaction = {
   successful: boolean;
@@ -30,32 +35,43 @@ export function flutterwaveConfigured() {
 }
 
 export function xofPerUsd() {
-  const rate = Number(process.env.PAY_XOF_PER_USD ?? '');
-  return Number.isFinite(rate) && rate >= 1 ? rate : 0;
+  return ratePerUsd('XOF');
 }
 
-export function mobileMoneyConfigured() {
-  return flutterwaveConfigured() && xofPerUsd() > 0;
+export function rwfPerUsd() {
+  return ratePerUsd('RWF');
+}
+
+/** Flutterwave only accepts mobile money in the rail's own currency, so a missing rate kills the rail. */
+export function onlineMethodAvailable(method: OnlinePaymentMethod) {
+  if (!flutterwaveConfigured()) return false;
+  if (method === 'card') return true;
+  if (method === 'mtn') return rwfPerUsd() > 0;
+  return xofPerUsd() > 0;
+}
+
+export function methodAvailable(method: PaymentMethod) {
+  if (method === 'cod') return true;
+  if (method === 'bank') return bankDetails() !== null;
+  return onlineMethodAvailable(method);
 }
 
 export function paymentConfig(): PaymentConfig {
-  return { card: flutterwaveConfigured(), mobile: mobileMoneyConfigured(), xofRate: xofPerUsd() };
-}
-
-export function methodAvailable(method: string) {
-  if (method === 'cod') return true;
-  if (method === 'card') return flutterwaveConfigured();
-  return isOnlineMethod(method) && mobileMoneyConfigured();
+  const card = onlineMethodAvailable('card');
+  return {
+    card,
+    rails: {
+      card,
+      mtn: onlineMethodAvailable('mtn'),
+      orange: onlineMethodAvailable('orange'),
+      wave: onlineMethodAvailable('wave'),
+    },
+    rates: { RWF: rwfPerUsd(), XOF: xofPerUsd() },
+  };
 }
 
 export function chargeFor(method: OnlinePaymentMethod, totalCents: number): Charge {
-  if (method === 'card') return { currency: 'USD', amount: Math.max(1, Math.round(totalCents)) };
-  const amount = Math.max(1, Math.round((totalCents / 100) * xofPerUsd()));
-  return { currency: 'XOF', amount };
-}
-
-export function apiAmount(charge: Charge) {
-  return charge.currency === 'USD' ? Number((charge.amount / 100).toFixed(2)) : charge.amount;
+  return localChargeFor(method, totalCents, { RWF: rwfPerUsd(), XOF: xofPerUsd() });
 }
 
 export function newPaymentRef(orderNumber: string) {
@@ -65,12 +81,6 @@ export function newPaymentRef(orderNumber: string) {
 export function orderNumberFromRef(ref: string) {
   const match = /^(CMB-[0-9]{6})-[0-9a-f]{10}$/i.exec(ref.trim());
   return match ? match[1].toUpperCase() : null;
-}
-
-export function amountMatches(charge: Charge, currency: string, amount: number) {
-  if (currency.toUpperCase() !== charge.currency) return false;
-  if (charge.currency === 'XOF') return Math.round(amount) === charge.amount;
-  return Math.round(amount * 100) === charge.amount;
 }
 
 export function webhookHashMatches(header: string | null) {
@@ -103,7 +113,7 @@ export async function initiatePayment(input: {
       amount: apiAmount(charge),
       currency: charge.currency,
       redirect_url: input.redirectUrl,
-      payment_options: input.method === 'card' ? 'card' : 'mobilemoneyxof',
+      payment_options: paymentOptions(input.method),
       customer: {
         email: input.email || CUSTOMER_EMAIL_FALLBACK,
         name: input.customerName,

@@ -14,8 +14,8 @@ const STATUS_LABEL: Record<string, string> = {
   delivered: 'Delivered',
   cancelled: 'Cancelled',
 };
-const PAYMENT_LABEL: Record<string, string> = { cod: 'Cash on delivery', card: 'Card', mtn: 'MTN MoMo', orange: 'Orange Money', wave: 'Wave' };
-const PAYMENT_STATUS_LABEL: Record<string, string> = { unpaid: 'On delivery', pending: 'Pending', paid: 'Paid', failed: 'Failed' };
+const PAYMENT_LABEL: Record<string, string> = { cod: 'Cash on delivery', card: 'Card', mtn: 'MTN MoMo', orange: 'Orange Money', wave: 'Wave', bank: 'Bank transfer' };
+const PAYMENT_STATUS_LABEL: Record<string, string> = { unpaid: 'Payment due', pending: 'Pending', paid: 'Paid', failed: 'Failed' };
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<Params> }) {
   const { q = '', status = '', saved, error } = await searchParams;

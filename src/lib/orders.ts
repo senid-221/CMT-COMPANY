@@ -3,6 +3,8 @@ import { prisma } from './db';
 import { buildOrderNumber, isSlot, quote, type Slot } from './pricing';
 import { isOnlineMethod, isPaymentMethod, type PaymentMethod } from './payment-methods';
 import { methodAvailable } from './payments';
+import { toUnits } from './money';
+import type { Market } from './markets';
 
 export type CreateOrderInput = {
   lines: { handle: string; quantity: number }[];
@@ -15,6 +17,8 @@ export type CreateOrderInput = {
   slot: Slot;
   paymentMethod?: PaymentMethod;
   customerId?: string | null;
+  /** Resolved from the shopper's cookie or geo header; never trusted from the request body. */
+  market: Market;
 };
 
 export type OrderResult =
@@ -37,8 +41,10 @@ export function validate(input: CreateOrderInput): string[] {
 }
 
 export async function createOrder(input: CreateOrderInput): Promise<OrderResult> {
+  const market = input.market;
   const paymentMethod = input.paymentMethod ?? 'cod';
   if (!isPaymentMethod(paymentMethod)) return { ok: false, error: 'invalid:paymentMethod' };
+  if (!market.methods.includes(paymentMethod)) return { ok: false, error: 'invalid:paymentMethod' };
   if (!methodAvailable(paymentMethod)) return { ok: false, error: 'payment-unavailable' };
 
   const errors = validate(input);
@@ -67,6 +73,11 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
   const totals = quote(lines, input.slot);
   if (totals.itemCount === 0) return { ok: false, error: 'invalid:lines' };
 
+  /** Money handed to a rider or transferred to the bank is collected in the local currency. */
+  const manualCurrency = paymentMethod === 'card' ? 'USD' : market.currency;
+  const manualAmount =
+    manualCurrency === 'USD' ? totals.totalCents : toUnits(totals.totalCents, { currency: manualCurrency, ratePerUsd: market.ratePerUsd });
+
   for (let attempt = 0; attempt < 6; attempt++) {
     const number = buildOrderNumber(String(randomInt(0, 1_000_000)));
     const existing = await prisma.order.findUnique({ where: { number }, select: { id: true } });
@@ -86,6 +97,9 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           slot: input.slot,
           paymentMethod,
           paymentStatus: isOnlineMethod(paymentMethod) ? 'pending' : 'unpaid',
+          paymentCurrency: isOnlineMethod(paymentMethod) ? null : manualCurrency,
+          paymentAmount: isOnlineMethod(paymentMethod) ? null : manualAmount,
+          market: market.code,
           customerId: input.customerId || null,
           subtotalCents: totals.subtotalCents,
           deliveryFeeCents: totals.deliveryFeeCents,

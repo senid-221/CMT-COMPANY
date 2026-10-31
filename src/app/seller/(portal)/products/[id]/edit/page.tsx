@@ -30,15 +30,15 @@ export default async function EditSellerProductPage({
       </Link>
       <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">{product.name}</h1>
-          <p className="text-sm text-slate-600">/product/{product.handle}</p>
+          <h1 className="font-display text-2xl font-bold text-ink">{product.name}</h1>
+          <p className="text-sm text-muted">/product/{product.handle}</p>
         </div>
         <Link href={`/product/${product.handle}`} target="_blank" className="btn btn-ghost text-sm">
           View on storefront ↗
         </Link>
       </div>
       {error ? (
-        <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+        <p className="mt-4 rounded-xl bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">
           {error === 'duplicate-handle' ? 'That handle is already used. Choose another one.' : 'Check the product details and try again.'}
         </p>
       ) : null}
@@ -46,14 +46,14 @@ export default async function EditSellerProductPage({
         <SellerProductForm product={product} categories={categories} action={saveSellerProduct} />
       </div>
 
-      <section className="mt-5 rounded-xl border border-red-200 bg-white p-4">
-        <h2 className="font-display text-lg font-semibold text-slate-900">Delete product</h2>
-        <p className="mt-1 text-sm text-slate-600">Removes it from the shop. Past order lines keep their snapshot.</p>
+      <section className="mt-5 rounded-xl border border-danger/30 bg-canvas p-4">
+        <h2 className="font-display text-lg font-semibold text-ink">Delete product</h2>
+        <p className="mt-1 text-sm text-muted">Removes it from the shop. Past order lines keep their snapshot.</p>
         <form action={deleteSellerProduct} className="mt-3">
           <input type="hidden" name="id" value={product.id} />
           <ConfirmButton
             message={`Delete ${product.name}? This cannot be undone.`}
-            className="rounded-full border border-red-300 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-50"
+            className="rounded-full border border-danger/40 px-4 py-2 text-sm font-bold text-danger hover:bg-danger/10"
           >
             Delete product
           </ConfirmButton>

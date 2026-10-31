@@ -5,13 +5,14 @@ import { localizedName } from '@/lib/catalog';
 import { t, type Locale } from '@/lib/i18n';
 import { statusKey } from '@/lib/order-labels';
 import { formatMoney } from '@/lib/money';
+import type { Market } from '@/lib/markets';
 import { useOrderRefs, useOrderStatuses } from '@/lib/local-orders';
 import { usePricedHandles } from '@/lib/priced-handles';
 import { useSavedHandles } from '@/lib/saved';
 
 const LOW_STOCK = 10;
 
-export function NotificationsView({ locale }: { locale: Locale }) {
+export function NotificationsView({ locale, market }: { locale: Locale; market: Market }) {
   const refs = useOrderRefs();
   const saved = useSavedHandles();
   const orderKey = refs.map((r) => r.number).join(',');
@@ -48,7 +49,7 @@ export function NotificationsView({ locale }: { locale: Locale }) {
                   <p className="text-sm text-muted">{date.format(new Date(order.placedAt))} · {t(locale, statusKey(order.status))}</p>
                 </div>
                 <span className="flex items-center gap-3 text-sm">
-                  <span className="font-medium">{formatMoney(order.totalCents, locale)}</span>
+                  <span className="font-medium">{formatMoney(order.totalCents, locale, market)}</span>
                   <span className="font-semibold text-brand">{t(locale, 'notif.open')}</span>
                 </span>
               </Link>
@@ -74,7 +75,7 @@ export function NotificationsView({ locale }: { locale: Locale }) {
                         : t(locale, 'notif.ok')}
                   </p>
                 </div>
-                <span className="whitespace-nowrap font-display text-sm font-bold text-brand">{formatMoney(product.priceCents, locale)}</span>
+                <span className="whitespace-nowrap font-display text-sm font-bold text-brand">{formatMoney(product.priceCents, locale, market)}</span>
                 <Link href={`/product/${product.handle}`} className="text-sm font-semibold text-brand hover:underline">
                   {t(locale, 'notif.open')}
                 </Link>

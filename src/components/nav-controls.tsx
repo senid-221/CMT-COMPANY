@@ -36,7 +36,7 @@ export function MenuButton({ items, locale }: { items: MenuItem[]; locale: Local
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={t(locale, 'nav.menu')}
-        className="grid h-10 w-10 place-items-center rounded-full border border-line bg-canvas text-ink transition hover:border-brand hover:text-brand"
+        className="grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full border border-line bg-canvas text-ink transition hover:border-brand hover:text-brand"
       >
         {open ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
       </button>
@@ -80,7 +80,7 @@ export function ThemeToggle({ locale }: { locale: Locale }) {
       onClick={toggle}
       aria-pressed={dark}
       aria-label={dark ? t(locale, 'theme.light') : t(locale, 'theme.dark')}
-      className="grid h-10 w-10 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand"
+      className="grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand"
     >
       {dark ? <SunIcon size={20} /> : <MoonIcon size={20} />}
     </button>

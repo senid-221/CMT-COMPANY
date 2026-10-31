@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getLocale } from '@/lib/locale';
+import { getMarket } from '@/lib/market';
 import { t } from '@/lib/i18n';
 import { getCategories, getCategory, getProducts, localizedName, type SortKey } from '@/lib/catalog';
 import { Filters, ProductGrid } from '@/components/shop-ui';
@@ -14,7 +15,7 @@ export default async function CategoryPage({
   searchParams: Promise<{ sort?: string; q?: string; deals?: string; minRating?: string }>;
 }) {
   const [{ handle }, params2] = await Promise.all([params, searchParams]);
-  const locale = await getLocale();
+  const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const category = await getCategory(handle);
   if (!category) notFound();
 
@@ -49,7 +50,7 @@ export default async function CategoryPage({
         deals={deals}
         minRating={minRating}
       />
-      <ProductGrid products={products} locale={locale} />
+      <ProductGrid products={products} locale={locale} market={market} />
     </div>
   );
 }

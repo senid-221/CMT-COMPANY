@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { createOrder, type CreateOrderInput } from '@/lib/orders';
 import { getCustomer } from '@/lib/customer/auth';
+import { getMarket } from '@/lib/market';
 import { clientIp, rateLimited } from '@/lib/rate-limit';
 import { isOnlineMethod, isPaymentMethod } from '@/lib/payment-methods';
 import { startOrderPayment, paymentRedirectUrl } from '@/lib/payments';
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
 
   const input = body as Partial<CreateOrderInput>;
   const customer = await getCustomer();
+  const market = await getMarket();
   const paymentMethod = isPaymentMethod(input.paymentMethod) ? input.paymentMethod : 'cod';
   const result = await createOrder({
     lines: Array.isArray(input.lines) ? input.lines.slice(0, 100) : [],
@@ -39,6 +41,7 @@ export async function POST(request: Request) {
     slot: input.slot as CreateOrderInput['slot'],
     paymentMethod,
     customerId: customer?.id ?? null,
+    market,
   });
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 422 });

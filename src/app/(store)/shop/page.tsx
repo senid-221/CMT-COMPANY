@@ -1,4 +1,5 @@
 import { getLocale } from '@/lib/locale';
+import { getMarket } from '@/lib/market';
 import { t } from '@/lib/i18n';
 import type { SortKey } from '@/lib/catalog';
 import { getCategories, getProducts } from '@/lib/catalog';
@@ -11,7 +12,7 @@ export default async function ShopPage({
 }: {
   searchParams: Promise<{ q?: string; category?: string; sort?: string; deals?: string; minRating?: string }>;
 }) {
-  const locale = await getLocale();
+  const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const params = await searchParams;
   const q = (params.q ?? '').trim();
   const category = (params.category ?? '').trim();
@@ -39,7 +40,7 @@ export default async function ShopPage({
         deals={deals}
         minRating={minRating}
       />
-      <ProductGrid products={products} locale={locale} />
+      <ProductGrid products={products} locale={locale} market={market} />
     </div>
   );
 }

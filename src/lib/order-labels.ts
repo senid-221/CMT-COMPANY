@@ -22,6 +22,7 @@ const METHOD_LABELS: Record<PaymentMethod, MessageKey> = {
   mtn: 'pay.method.mtn',
   orange: 'pay.method.orange',
   wave: 'pay.method.wave',
+  bank: 'pay.method.bank',
 };
 
 const PAYMENT_STATUS_LABELS: Record<PaymentStatus, MessageKey> = {

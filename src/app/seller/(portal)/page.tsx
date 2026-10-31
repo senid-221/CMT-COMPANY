@@ -46,8 +46,8 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
     <div>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">{seller.name}</h1>
-          <p className="mt-1 text-sm text-slate-600">Publish products, update prices and manage stock.</p>
+          <h1 className="font-display text-2xl font-bold text-ink">{seller.name}</h1>
+          <p className="mt-1 text-sm text-muted">Publish products, update prices and manage stock.</p>
         </div>
         <Link href="/seller/products/new" className="btn btn-primary">
           New product
@@ -61,22 +61,22 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
           { label: 'Low stock', value: low },
           { label: 'Orders with your items', value: orderRows.length },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{stat.label}</p>
-            <p className="mt-1 font-display text-2xl font-bold text-slate-900">{stat.value}</p>
+          <div key={stat.label} className="rounded-xl border border-line bg-canvas p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{stat.label}</p>
+            <p className="mt-1 font-display text-2xl font-bold text-ink">{stat.value}</p>
           </div>
         ))}
       </div>
 
       {flash ? (
-        <p className={`mt-5 rounded-xl px-4 py-3 text-sm font-semibold ${error ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-800'}`}>
+        <p className={`mt-5 rounded-xl px-4 py-3 text-sm font-semibold ${error ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success'}`}>
           {flash}
         </p>
       ) : null}
 
-      <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="mt-5 overflow-x-auto rounded-xl border border-line bg-canvas">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-line bg-surface-alt text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Category</th>
@@ -85,24 +85,24 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line">
             {products.map((product) => (
-              <tr key={product.id} className="hover:bg-slate-50">
+              <tr key={product.id} className="hover:bg-surface-alt">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <img src={product.image} alt="" width={40} height={40} className="h-10 w-10 rounded-lg bg-slate-50 object-contain p-1" />
+                    <img src={product.image} alt="" width={40} height={40} className="h-10 w-10 rounded-lg bg-surface-alt object-contain p-1" />
                     <div>
-                      <p className="font-semibold text-slate-900">{product.name}</p>
-                      <p className="text-xs text-slate-500">{product.handle}</p>
+                      <p className="font-semibold text-ink">{product.name}</p>
+                      <p className="text-xs text-muted">{product.handle}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-slate-600">{product.category.name}</td>
+                <td className="px-4 py-3 text-muted">{product.category.name}</td>
                 <td className="px-4 py-3 text-right">
-                  <p className="font-semibold text-slate-900">{formatMoney(product.priceCents, 'en')}</p>
-                  {product.compareAtCents ? <p className="text-xs text-slate-400 line-through">{formatMoney(product.compareAtCents, 'en')}</p> : null}
+                  <p className="font-semibold text-ink">{formatMoney(product.priceCents, 'en')}</p>
+                  {product.compareAtCents ? <p className="text-xs text-muted line-through">{formatMoney(product.compareAtCents, 'en')}</p> : null}
                 </td>
-                <td className={`px-4 py-3 text-right font-semibold ${product.stock <= 10 ? 'text-amber-700' : 'text-slate-700'}`}>{product.stock}</td>
+                <td className={`px-4 py-3 text-right font-semibold ${product.stock <= 10 ? 'text-warning' : 'text-label'}`}>{product.stock}</td>
                 <td className="px-4 py-3 text-right">
                   <Link href={`/seller/products/${product.id}/edit`} className="text-sm font-semibold text-brand hover:underline">
                     Edit
@@ -114,7 +114,7 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
         </table>
         {products.length ? null : (
           <div className="px-4 py-10 text-center">
-            <p className="text-sm text-slate-600">No products yet. Publish your first product to appear in the shop.</p>
+            <p className="text-sm text-muted">No products yet. Publish your first product to appear in the shop.</p>
             <Link href="/seller/products/new" className="btn btn-primary mt-4">
               Add a product
             </Link>

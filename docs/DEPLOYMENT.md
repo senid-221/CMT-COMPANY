@@ -107,24 +107,76 @@ sign-in.
 
 ## 3c. Online payments (Flutterwave)
 
-Checkout offers cash on delivery plus four online methods: debit/credit card, MTN Mobile Money, Orange Money and Wave.
-Card is charged in US dollars; the three mobile money methods are charged in CFA francs (XOF) at the rate in
-`PAY_XOF_PER_USD`. The sticker price stays in USD — checkout shows the exact XOF amount before the customer leaves.
+Prices and rails follow the shopper's country — see §3d before configuring this section.
+
+Checkout offers cash on delivery, bank transfer, debit/credit card and the mobile money rails the shopper's country has.
+Card is always charged in US dollars. Mobile money is charged in the rail's own currency, because Flutterwave rejects
+any other: MTN MoMo (`mobilemoneyrwanda`) only in RWF, Orange Money and Wave (`mobilemoneyxof`, networks
+`ORANGEMONEY` / `WAVE`) only in XOF. The rate used is `PAY_RWF_PER_USD` or `PAY_XOF_PER_USD`, and checkout prints the
+exact local amount before the customer leaves the site.
 
 1. Flutterwave Dashboard → **Settings → API keys**: copy the **Secret key** into `FLW_SECRET_KEY`.
-   Your Flutterwave account must be enabled for XOF collections and for the mobile money networks you want to offer.
+   Your Flutterwave account must be enabled for RWF and XOF collections and for the mobile money networks you want.
 2. **Settings → Webhooks**: set the URL to `https://<your-domain>/api/payments/flutterwave/webhook` and choose a
    secret hash. Put the same hash in `FLW_WEBHOOK_HASH` (the server rejects any webhook whose `verif-hash` header
    does not match it).
-3. Set `PAY_XOF_PER_USD` to the rate you want to charge (for example `600`). Restart the app.
+3. Set the FX rates you want to bill (see §3d) and restart the app.
 
 Redirect URL used by the gateway: `https://<your-domain>/api/payments/flutterwave/callback`, built from
 `NEXT_PUBLIC_SITE_URL`. Every payment is verified server-to-server against the Flutterwave transaction API before an
 order is marked paid — both on the browser redirect and on the webhook — and the amount, currency and order reference
 must match the stored order. A failed or cancelled payment keeps the order and offers **Pay now** on the order page.
 
-With `FLW_SECRET_KEY` empty, all four online methods are disabled in checkout and only cash on delivery works; the
-`FLW_API_BASE` variable exists only to point the integration at a sandbox or proxy during testing.
+With `FLW_SECRET_KEY` empty, every online method is disabled in checkout and only cash on delivery (plus bank transfer,
+if configured) works; the `FLW_API_BASE` variable exists only to point the integration at a sandbox or proxy during testing.
+
+## 3d. Countries, currencies and rails
+
+Each shopper is served in one **market**. A market decides the currency the whole site is priced in and the payment
+methods checkout offers. Prices are stored in US cent everywhere; the local figure is derived at render time, so a
+change of rate never rewrites history — orders keep the currency and amount they were taken in.
+
+| Market | Currency | Rails | FX variable |
+| --- | --- | --- | --- |
+| Rwanda (`RW`) | RWF | cash on delivery, card, MTN MoMo, bank transfer | `PAY_RWF_PER_USD` |
+| Senegal + the XOF zone (`SN`) | XOF | cash on delivery, card, Orange Money, Wave, bank transfer | `PAY_XOF_PER_USD` |
+| Everywhere else (`INT`) | USD | cash on delivery, card | none |
+
+Resolution order for a visit: the `cmb_market` cookie (set when the shopper picks a country in the header) → the
+country header from the CDN or proxy (`x-geo-country`, `cf-ipcountry`, `x-country-code`, `x-forwarded-country`) →
+`INT`. Nginx must forward the header for geo detection to reach the app:
+
+```
+proxy_set_header x-geo-country $http_x_geo_country;
+```
+
+The header pill in the navbar also guesses the country client-side (get.geojs.io) when no cookie exists yet and offers
+it as "Detected: …" — a shopper's explicit pick is never overwritten.
+
+A market goes live only when it can actually price and collect:
+
+- `PAY_RWF_PER_USD` missing → Rwanda drops out of the switcher and MTN MoMo is unavailable (Flutterwave needs an RWF
+  amount). `PAY_XOF_PER_USD` missing → same for Senegal, Orange Money and Wave.
+- `PAY_BANK_NAME`, `PAY_BANK_ACCOUNT` and `PAY_BANK_HOLDER` — all three required, or the bank option stays hidden.
+  Flutterwave has no inbound bank transfer product for Rwanda or Senegal, so this rail is a **manual** transfer: the
+  order page prints the account and an admin marks the payment received after checking the statement. Never ask the
+  shopper for a card number, PIN or CVV.
+
+Values to paste in `/opt/citymarket/.env` (adjust the two rates to the ones you want to bill — leave the bank
+variables empty until the seller's real account is known):
+
+```
+PAY_RWF_PER_USD="1300"
+PAY_XOF_PER_USD="600"
+PAY_BANK_NAME=""
+PAY_BANK_ACCOUNT=""
+PAY_BANK_HOLDER=""
+```
+
+`createOrder` re-checks the method against the resolved market on the server, so a hand-crafted request that posts
+`paymentMethod=orange` while the market is Rwanda is rejected with `invalid:paymentMethod` — the filter in the UI is
+a convenience, not the rule. The new `Order.market` column means the schema must be pushed to Neon before this goes
+live: `npx prisma db push --schema=prisma/schema.prisma`.
 
 ## 4. Nginx + HTTPS
 

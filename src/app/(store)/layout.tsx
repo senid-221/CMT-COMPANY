@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { getLocale } from '@/lib/locale';
+import { availableMarkets, getMarket } from '@/lib/market';
 import { t, type Locale } from '@/lib/i18n';
 import { getCategories, localizedName } from '@/lib/catalog';
 import { getContent, pickText } from '@/lib/content';
 import { CartBadge, SavedBadge } from '@/components/cart-badge';
 import { CategoryStrip } from '@/components/category-strip';
 import { LocaleSwitch } from '@/components/locale-switch';
+import { MarketSwitch } from '@/components/market-switch';
 import { Logo } from '@/components/logo';
 import { MenuButton, ThemeToggle, type MenuItem } from '@/components/nav-controls';
 import { BellIcon, BookmarkIcon, CalendarIcon, CartIcon, SearchIcon, UserIcon } from '@/components/icons';
@@ -13,7 +15,7 @@ import { VisitorTracker } from '@/components/visitor-tracker';
 import { WhatsAppFab } from '@/components/whatsapp-fab';
 import { INFO_PAGES } from '@/lib/info';
 
-const ICON_LINK = 'relative grid h-10 w-10 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand';
+const ICON_LINK = 'relative grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand';
 
 function menuItems(locale: Locale): MenuItem[] {
   return [
@@ -33,6 +35,7 @@ function infoLabel(locale: Locale, slug: string) {
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
+  const market = await getMarket();
   const [categories, content] = await Promise.all([getCategories(), getContent()]);
   const announcement = pickText(content.announcement.text, locale);
   const whatsapp = (process.env.NEXT_PUBLIC_WHATSAPP ?? '').replace(/\D/g, '');
@@ -71,6 +74,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
           <nav className="ml-auto flex items-center gap-0 sm:gap-1">
             <MenuButton locale={locale} items={menuItems(locale)} />
+            <MarketSwitch locale={locale} market={market} options={availableMarkets()} />
             <LocaleSwitch locale={locale} />
             <Link href="/notifications" aria-label={t(locale, 'nav.notifications')} className={ICON_LINK}>
               <BellIcon size={20} />

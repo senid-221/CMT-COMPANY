@@ -9,14 +9,14 @@ export default async function SellerPortalLayout({ children }: { children: React
   const seller = await requireSeller();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-surface-alt">
+      <header className="border-b border-line bg-canvas">
         <div className="mx-auto flex min-h-16 w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
           <Link href="/seller" className="flex items-center gap-2">
             <Logo size="sm" />
           </Link>
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand">Seller</span>
-          <nav className="flex items-center gap-4 text-sm font-semibold text-slate-600">
+          <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand">Seller</span>
+          <nav className="flex items-center gap-4 text-sm font-semibold text-muted">
             <Link href="/seller" className="hover:text-brand">
               Products
             </Link>
@@ -25,9 +25,9 @@ export default async function SellerPortalLayout({ children }: { children: React
             </Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden max-w-40 truncate text-sm font-semibold text-slate-700 sm:block">{seller.name}</span>
+            <span className="hidden max-w-40 truncate text-sm font-semibold text-label sm:block">{seller.name}</span>
             <form action={logoutSeller}>
-              <button type="submit" className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-600 hover:border-brand hover:text-brand">
+              <button type="submit" className="rounded-full border border-line px-3 py-1.5 text-xs font-bold text-muted hover:border-brand hover:text-brand">
                 Sign out
               </button>
             </form>

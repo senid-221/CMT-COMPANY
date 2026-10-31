@@ -7,8 +7,8 @@ import type { AuthState } from '@/app/(store)/auth-actions';
 import { loginCustomer, signupCustomer } from '@/app/(store)/auth-actions';
 
 const INPUT =
-  'h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20';
-const LABEL = 'mb-1 block text-sm font-semibold text-slate-700';
+  'h-11 w-full rounded-xl border border-line bg-canvas px-3 text-sm text-ink placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20';
+const LABEL = 'mb-1 block text-sm font-semibold text-label';
 
 function errorText(locale: Locale, error: AuthState['error']) {
   switch (error) {
@@ -34,7 +34,7 @@ function errorText(locale: Locale, error: AuthState['error']) {
 function ErrorNote({ locale, error }: { locale: Locale; error: AuthState['error'] }) {
   if (!error) return null;
   return (
-    <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+    <p role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
       {errorText(locale, error)}
     </p>
   );
@@ -60,7 +60,7 @@ export function LoginForm({ locale }: { locale: Locale }) {
       <button type="submit" disabled={pending} className="btn btn-primary h-11 w-full disabled:opacity-60">
         {t(locale, 'auth.signIn')}
       </button>
-      <p className="pt-1 text-center text-sm text-slate-600">
+      <p className="pt-1 text-center text-sm text-muted">
         {t(locale, 'auth.noAccount')}{' '}
         <Link href="/signup" className="font-semibold text-brand hover:underline">
           {t(locale, 'auth.signUp')}
@@ -97,13 +97,13 @@ export function SignupForm({ locale }: { locale: Locale }) {
           {t(locale, 'auth.password')}
         </label>
         <input id="signup-password" name="password" type="password" required minLength={8} autoComplete="new-password" className={INPUT} />
-        <p className="mt-1 text-xs text-slate-500">{t(locale, 'auth.passwordHint')}</p>
+        <p className="mt-1 text-xs text-muted">{t(locale, 'auth.passwordHint')}</p>
       </div>
       <ErrorNote locale={locale} error={state.error} />
       <button type="submit" disabled={pending} className="btn btn-primary h-11 w-full disabled:opacity-60">
         {t(locale, 'auth.create')}
       </button>
-      <p className="pt-1 text-center text-sm text-slate-600">
+      <p className="pt-1 text-center text-sm text-muted">
         {t(locale, 'auth.haveAccount')}{' '}
         <Link href="/login" className="font-semibold text-brand hover:underline">
           {t(locale, 'auth.signIn')}

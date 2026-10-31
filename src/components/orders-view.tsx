@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { t, type Locale } from '@/lib/i18n';
 import { statusKey } from '@/lib/order-labels';
 import { formatMoney } from '@/lib/money';
+import type { Market } from '@/lib/markets';
 import { useOrderRefs, useOrderStatuses } from '@/lib/local-orders';
 
-export function OrdersView({ locale }: { locale: Locale }) {
+export function OrdersView({ locale, market }: { locale: Locale; market: Market }) {
   const refs = useOrderRefs();
   const key = refs.map((r) => r.number).join(',');
   const state = useOrderStatuses(key);
@@ -43,7 +44,7 @@ export function OrdersView({ locale }: { locale: Locale }) {
           </div>
           <div className="flex items-center gap-3">
             <span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">{t(locale, statusKey(order.status))}</span>
-            <span className="font-display font-bold text-brand">{formatMoney(order.totalCents, locale)}</span>
+            <span className="font-display font-bold text-brand">{formatMoney(order.totalCents, locale, market)}</span>
           </div>
         </Link>
       ))}

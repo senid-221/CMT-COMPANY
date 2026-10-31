@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
+import { getMarket } from '@/lib/market';
 import { statusKey } from '@/lib/order-labels';
 import { findOrdersForCustomer } from '@/lib/orders';
 import { requireCustomer } from '@/lib/customer/auth';
@@ -10,16 +11,16 @@ import { logoutCustomer } from '@/app/(store)/auth-actions';
 export const metadata = { title: 'My account', robots: { index: false } };
 
 const PILL: Record<string, string> = {
-  placed: 'bg-amber-100 text-amber-800',
+  placed: 'bg-amber/15 text-amber',
   packing: 'bg-sky-100 text-sky-800',
   onWay: 'bg-indigo-100 text-indigo-800',
-  delivered: 'bg-emerald-100 text-emerald-800',
+  delivered: 'bg-success/15 text-success',
   cancelled: 'bg-rose-100 text-rose-800',
 };
 
 export default async function AccountPage() {
   const customer = await requireCustomer();
-  const locale = await getLocale();
+  const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const orders = await findOrdersForCustomer(customer);
   const date = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', { dateStyle: 'medium' });
   const initial = customer.name.trim().charAt(0).toUpperCase();
@@ -75,7 +76,7 @@ export default async function AccountPage() {
                   <span className={`rounded-full px-3 py-1 text-xs font-semibold ${PILL[order.status] ?? 'bg-surface-alt text-ink'}`}>
                     {t(locale, statusKey(order.status))}
                   </span>
-                  <span className="font-display font-bold text-brand">{formatMoney(order.totalCents, locale)}</span>
+                  <span className="font-display font-bold text-brand">{formatMoney(order.totalCents, locale, market)}</span>
                 </div>
               </Link>
             ))

@@ -19,8 +19,8 @@ export function SellerProductForm({ product, categories, action }: { product?: P
     <form action={action} className="grid gap-4 lg:grid-cols-2">
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
 
-      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
-        <h2 className="font-display text-lg font-semibold text-slate-900">Product basics</h2>
+      <div className="space-y-4 rounded-xl border border-line bg-canvas p-4">
+        <h2 className="font-display text-lg font-semibold text-ink">Product basics</h2>
         <div>
           <label className="label" htmlFor="name">
             Name (English)
@@ -38,7 +38,7 @@ export function SellerProductForm({ product, categories, action }: { product?: P
             Handle (URL)
           </label>
           <input id="handle" name="handle" required defaultValue={product?.handle ?? ''} pattern="[a-zA-Z0-9-]{2,80}" className="field" />
-          <p className="mt-1 text-xs text-slate-500">Used in /product/&lt;handle&gt;. Letters, numbers and dashes.</p>
+          <p className="mt-1 text-xs text-muted">Used in /product/&lt;handle&gt;. Letters, numbers and dashes.</p>
         </div>
         <div>
           <label className="label" htmlFor="categoryId">
@@ -62,8 +62,8 @@ export function SellerProductForm({ product, categories, action }: { product?: P
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-          <h2 className="font-display text-lg font-semibold text-slate-900">Price and stock</h2>
+        <div className="space-y-3 rounded-xl border border-line bg-canvas p-4">
+          <h2 className="font-display text-lg font-semibold text-ink">Price and stock</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="label" htmlFor="price">
@@ -83,18 +83,18 @@ export function SellerProductForm({ product, categories, action }: { product?: P
               Compare-at price (optional)
             </label>
             <input id="compareAt" name="compareAt" type="number" min={0.01} max={1000000} step={0.01} defaultValue={product?.compareAtCents ? product.compareAtCents / 100 : ''} className="field" />
-            <p className="mt-1 text-xs text-slate-500">Shows a strikethrough price and a discount badge. Leave empty for no deal.</p>
+            <p className="mt-1 text-xs text-muted">Shows a strikethrough price and a discount badge. Leave empty for no deal.</p>
           </div>
         </div>
 
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-          <h2 className="font-display text-lg font-semibold text-slate-900">Media and description</h2>
+        <div className="space-y-3 rounded-xl border border-line bg-canvas p-4">
+          <h2 className="font-display text-lg font-semibold text-ink">Media and description</h2>
           <div>
             <label className="label" htmlFor="image">
               Image path or URL
             </label>
             <input id="image" name="image" required defaultValue={product?.image ?? '/media/'} className="field" />
-            {product ? <img src={product.image} alt="" width={64} height={64} className="mt-2 h-16 w-16 rounded-xl bg-slate-50 object-contain p-1" /> : null}
+            {product ? <img src={product.image} alt="" width={64} height={64} className="mt-2 h-16 w-16 rounded-xl bg-surface-alt object-contain p-1" /> : null}
           </div>
           <div>
             <label className="label" htmlFor="description">
