@@ -14,9 +14,11 @@ export function SaveButton({ handle, locale }: { handle: string; locale: Locale 
       onClick={() => toggleSaved(handle)}
       aria-pressed={isSaved}
       aria-label={isSaved ? t(locale, 'product.saved') : t(locale, 'product.save')}
-      className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-action text-action-fg transition hover:bg-brand"
+      className={`grid h-8 w-8 shrink-0 place-items-center rounded-full shadow-sm transition active:scale-90 ${
+        isSaved ? 'bg-brand text-white' : 'bg-action text-action-fg hover:bg-brand'
+      }`}
     >
-      <BookmarkIcon size={18} filled={isSaved} />
+      <BookmarkIcon size={15} filled={isSaved} />
     </button>
   );
 }

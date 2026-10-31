@@ -30,7 +30,7 @@ export function AddToCart({
         type="button"
         onClick={throwIn}
         aria-label={t(locale, 'product.addToCart')}
-        className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-action text-action-fg transition hover:bg-brand active:scale-90"
+        className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-action text-action-fg transition hover:bg-brand active:scale-90 sm:h-10 sm:w-10"
       >
         <CartIcon size={18} />
         {qty > 0 ? (
