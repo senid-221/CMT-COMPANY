@@ -11,9 +11,9 @@
   --color-info: #1d5fc9;
 
   --color-ink: #14181b;
-  --color-label: #3f4650;
-  --color-muted: #616873;
-  --color-line: #eaebf1;
+  --color-label: #14181b;
+  --color-muted: #2b3036;
+  --color-line: #b9c0c9;
   --color-alternate: #e5e7eb;
   --color-canvas: #ffffff;
   --color-page: #ffffff;
@@ -63,11 +63,11 @@ html.dark {
   --color-surface: #1f262b;
   --color-surface-alt: #1b2226;
   --color-hover: #232b31;
-  --color-line: #2b343a;
+  --color-line: #48565f;
   --color-alternate: #33404a;
   --color-ink: #e9eef2;
-  --color-label: #cfd8de;
-  --color-muted: #9fb0bc;
+  --color-label: #e9eef2;
+  --color-muted: #d7e0e6;
   --color-brand: #4aa883;
   --color-brand-dark: #2e8060;
   --color-brand-solid: #297357;
