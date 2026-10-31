@@ -12,7 +12,7 @@ export function ProductCard({ product, locale, market }: { product: ProductRow; 
   const discount = product.compareAtCents ? Math.round((1 - product.priceCents / product.compareAtCents) * 100) : 0;
 
   return (
-    <article className="card flex flex-col overflow-hidden transition hover:shadow-lg">
+    <article className="card flex h-full flex-col overflow-hidden transition hover:shadow-lg">
       <Link href={`/product/${product.handle}`} className="relative block bg-surface-alt p-3">
         {discount > 0 ? (
           <span className="absolute left-2 top-2 z-10 rounded-full bg-brand px-2 py-0.5 text-[11px] font-bold text-white">-{discount}%</span>
@@ -47,7 +47,7 @@ export function ProductCard({ product, locale, market }: { product: ProductRow; 
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <SaveButton handle={product.handle} locale={locale} />
-            <AddToCart handle={product.handle} locale={locale} compact />
+            <AddToCart handle={product.handle} locale={locale} compact image={product.image} />
           </div>
         </div>
       </div>

@@ -17,6 +17,7 @@ const MESSAGES: Record<string, string> = {
   deleted: 'Deleted.',
   invalid: 'Some fields were invalid. Nothing was changed.',
   'duplicate-handle': 'That product handle is already used.',
+  'duplicate-code': 'That coupon code is already used.',
   'insufficient-stock': 'Not enough stock to reopen this order. Restock the products first.',
 };
 

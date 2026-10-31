@@ -189,3 +189,194 @@ html.dark .bg-brand {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+@keyframes cmb-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.38); }
+  100% { transform: scale(1); }
+}
+
+@keyframes cmb-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes cmb-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cmb-shine {
+  from { transform: translateX(-130%) skewX(-18deg); }
+  to { transform: translateX(240%) skewX(-18deg); }
+}
+
+@keyframes cmb-flip {
+  from { transform: rotateX(92deg); opacity: 0; }
+  to { transform: rotateX(0deg); opacity: 1; }
+}
+
+@keyframes cmb-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes cmb-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+@keyframes cmb-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.anim-pop { animation: cmb-pop 340ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.anim-rise { animation: cmb-rise 420ms ease both; }
+
+.anim-fade { animation: cmb-fade 320ms ease both; }
+
+.anim-float { animation: cmb-float 5s ease-in-out infinite; }
+
+.anim-sway { animation: cmb-sway 3.6s ease-in-out infinite; }
+
+.rail {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+
+.rail > * {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+.flyer {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  will-change: transform, opacity;
+}
+
+.shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: cmb-shine 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.flip-in {
+  animation: cmb-flip 460ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  transform-origin: top center;
+  backface-visibility: hidden;
+}
+
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: cmb-marquee 26s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+.ticket-strip {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 9999px;
+  background: var(--color-surface-alt);
+  padding-block: 10px;
+}
+
+.ticket {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--color-canvas);
+  border: 1.5px dashed var(--color-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.ticket-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-left: auto;
+  padding: 14px 16px;
+  border-left: 1.5px dashed var(--color-line);
+}
+
+.btn-3d {
+  --edge: color-mix(in srgb, var(--color-brand-solid-hover) 100%, black);
+  transform-style: preserve-3d;
+  box-shadow: 0 4px 0 var(--edge), 0 6px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 140ms ease, background 140ms ease;
+}
+
+.btn-3d:hover {
+  transform: perspective(600px) translateY(-2px) rotateX(8deg);
+  box-shadow: 0 6px 0 var(--edge), 0 12px 22px rgba(0, 0, 0, 0.22);
+}
+
+.btn-3d:active {
+  transform: perspective(600px) translateY(4px) rotateX(0deg);
+  box-shadow: 0 0 0 var(--edge), 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+
+.btn-3d-ink {
+  --edge: color-mix(in srgb, var(--color-ink) 78%, black);
+}
+
+.btn-3d-line {
+  --edge: var(--color-line);
+}
+
+.tilt {
+  transform-style: preserve-3d;
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.tilt:hover {
+  transform: perspective(900px) rotateX(4deg) rotateY(-4deg) translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shine::after,
+  .anim-float,
+  .anim-sway {
+    display: none;
+  }
+
+  .marquee {
+    animation: none;
+    width: 100%;
+  }
+}

@@ -4,7 +4,12 @@ import { getMarket } from '@/lib/market';
 import { t, type Locale } from '@/lib/i18n';
 import { getCategories, getDeals, getFeatured, getProducts, getProductsByHandles } from '@/lib/catalog';
 import { getContent, pickText } from '@/lib/content';
-import { CategoryTiles, FreeDeliveryNote, ProductGrid } from '@/components/shop-ui';
+import { FREE_DELIVERY_FROM_CENTS } from '@/lib/pricing';
+import { formatMoney } from '@/lib/money';
+import { CategoryTiles, FreeDeliveryNote, ProductGrid, ProductRail } from '@/components/shop-ui';
+import { HeroSlider, type HeroSlide } from '@/components/hero-slider';
+import { CouponAds } from '@/components/coupon-ads';
+import { getActiveCoupons } from '@/lib/coupons';
 
 async function heroCopy(locale: Locale) {
   const content = await getContent();
@@ -18,52 +23,65 @@ async function heroCopy(locale: Locale) {
   };
 }
 
+const images = (products: { image: string; handle: string }[]) =>
+  products.map((p) => ({ src: p.image, alt: '' }));
+
 export default async function HomePage() {
   const [locale, market] = await Promise.all([getLocale(), getMarket()]);
   const hero = await heroCopy(locale);
-  const [categories, featured, latest, deals] = await Promise.all([
+  const [categories, featured, latest, deals, coupons] = await Promise.all([
     getCategories(),
     hero.featuredHandles.length ? getProductsByHandles(hero.featuredHandles) : getFeatured(),
-    getProducts({ sort: 'name', take: 10 }),
-    getDeals(5),
+    getProducts({ sort: 'name', take: 12 }),
+    getDeals(10),
+    getActiveCoupons(market.code),
   ]);
 
-  const heroImages = (featured.length ? featured : latest).slice(0, 3);
+  const heroPool = featured.length ? featured : latest;
+
+  const slides: HeroSlide[] = [
+    {
+      title: hero.title,
+      text: hero.text,
+      ctaLabel: hero.ctaLabel,
+      ctaHref: hero.ctaHref,
+      images: images(heroPool.slice(0, 3)),
+    },
+  ];
+
+  if (deals.length) {
+    slides.push({
+      title: t(locale, 'home.deals'),
+      text: t(locale, 'home.dealsSlideText'),
+      ctaLabel: t(locale, 'home.seeDeals'),
+      ctaHref: '/shop?deals=1',
+      images: images(deals.slice(0, 3)),
+    });
+  }
+
+  slides.push({
+    title: t(locale, 'home.deliverySlideTitle', { amount: formatMoney(FREE_DELIVERY_FROM_CENTS, locale, market) }),
+    text: hero.note?.trim() || t(locale, 'home.deliverySlideText'),
+    ctaLabel: t(locale, 'home.shopNow'),
+    ctaHref: '/shop',
+    images: images(latest.slice(0, 3)),
+  });
+
+  const rail = {
+    prevLabel: t(locale, 'rail.prev'),
+    nextLabel: t(locale, 'rail.next'),
+    locale,
+    market,
+  };
 
   return (
     <div className="shell space-y-10 py-8">
-      <section className="relative overflow-hidden rounded-2xl bg-brand px-6 py-10 text-white sm:px-10">
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">{hero.title}</h1>
-          <p className="text-white/85">{hero.text}</p>
-          <div className="flex flex-wrap gap-3 pt-2">
-            <Link href={hero.ctaHref} className="btn bg-white text-brand-solid hover:bg-white/90">
-              {hero.ctaLabel}
-            </Link>
-            <Link href="/track" className="btn border border-white/40 text-white hover:bg-white/10">
-              {t(locale, 'nav.track')}
-            </Link>
-          </div>
-        </div>
+      <HeroSlider
+        slides={slides}
+        labels={slides.map((_, i) => t(locale, 'rail.slide', { n: i + 1, total: slides.length }))}
+      />
 
-        {heroImages.length ? (
-          <div aria-hidden className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 items-center xl:flex">
-            {heroImages.map((p, i) => (
-              <img
-                key={p.handle}
-                src={p.image}
-                alt=""
-                width={240}
-                height={240}
-                className={[
-                  'rounded-3xl bg-white p-4 shadow-xl ring-1 ring-black/5 object-contain',
-                  i === 0 ? 'h-44 w-44 -rotate-6' : i === 1 ? 'ml-[-1.75rem] h-52 w-52 rotate-2' : 'ml-[-1.75rem] h-36 w-36 rotate-6',
-                ].join(' ')}
-              />
-            ))}
-          </div>
-        ) : null}
-      </section>
+      {coupons.length ? <CouponAds coupons={coupons} locale={locale} market={market} /> : null}
 
       <section className="space-y-4">
         <h2 className="font-display text-xl font-semibold">{t(locale, 'home.byCategory')}</h2>
@@ -78,7 +96,7 @@ export default async function HomePage() {
               {t(locale, 'home.seeDeals')} →
             </Link>
           </div>
-          <ProductGrid products={deals} locale={locale} market={market} />
+          <ProductRail products={deals} autoAdvance {...rail} />
         </section>
       ) : null}
 
@@ -87,7 +105,7 @@ export default async function HomePage() {
           <h2 className="font-display text-xl font-semibold">{t(locale, 'home.featured')}</h2>
           <FreeDeliveryNote locale={locale} market={market} note={hero.note} />
         </div>
-        <ProductGrid products={featured} locale={locale} market={market} />
+        <ProductRail products={featured} {...rail} />
       </section>
 
       <section className="space-y-4">

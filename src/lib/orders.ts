@@ -4,6 +4,7 @@ import { buildOrderNumber, isSlot, quote, type Slot } from './pricing';
 import { isOnlineMethod, isPaymentMethod, type PaymentMethod } from './payment-methods';
 import { methodAvailable } from './payments';
 import { toUnits } from './money';
+import { evaluateCode, normalizeCode } from './coupons';
 import type { Market } from './markets';
 
 export type CreateOrderInput = {
@@ -17,6 +18,7 @@ export type CreateOrderInput = {
   slot: Slot;
   paymentMethod?: PaymentMethod;
   customerId?: string | null;
+  coupon?: string | null;
   /** Resolved from the shopper's cookie or geo header; never trusted from the request body. */
   market: Market;
 };
@@ -73,10 +75,21 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
   const totals = quote(lines, input.slot);
   if (totals.itemCount === 0) return { ok: false, error: 'invalid:lines' };
 
+  const couponCode = normalizeCode(input.coupon);
+  let discountCents = 0;
+  let appliedCoupon: string | null = null;
+  if (couponCode) {
+    const check = await evaluateCode(couponCode, totals.subtotalCents, market.code);
+    if (!check.ok) return { ok: false, error: `coupon:${check.error}` };
+    discountCents = check.discountCents;
+    appliedCoupon = check.coupon.code;
+  }
+  const grandTotal = Math.max(0, totals.subtotalCents - discountCents) + totals.deliveryFeeCents;
+
   /** Money handed to a rider or transferred to the bank is collected in the local currency. */
   const manualCurrency = paymentMethod === 'card' ? 'USD' : market.currency;
   const manualAmount =
-    manualCurrency === 'USD' ? totals.totalCents : toUnits(totals.totalCents, { currency: manualCurrency, ratePerUsd: market.ratePerUsd });
+    manualCurrency === 'USD' ? grandTotal : toUnits(grandTotal, { currency: manualCurrency, ratePerUsd: market.ratePerUsd });
 
   for (let attempt = 0; attempt < 6; attempt++) {
     const number = buildOrderNumber(String(randomInt(0, 1_000_000)));
@@ -103,7 +116,9 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           customerId: input.customerId || null,
           subtotalCents: totals.subtotalCents,
           deliveryFeeCents: totals.deliveryFeeCents,
-          totalCents: totals.totalCents,
+          discountCents,
+          couponCode: appliedCoupon,
+          totalCents: grandTotal,
           items: {
             create: resolved.map((r) => ({
               productId: r.product.id,
@@ -123,6 +138,10 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           where: { id: r.product.id },
           data: { stock: { decrement: r.quantity } },
         });
+      }
+
+      if (appliedCoupon) {
+        await tx.coupon.update({ where: { code: appliedCoupon }, data: { usedCount: { increment: 1 } } });
       }
 
       return { ok: true as const, number: order.number, totalCents: order.totalCents, paymentMethod };

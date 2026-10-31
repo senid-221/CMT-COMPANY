@@ -178,6 +178,15 @@ export function ChartIcon({ size = 18 }: IconProps) {
   );
 }
 
+export function TicketIcon({ size = 18 }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} {...base}>
+      <path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4z" />
+      <path d="M13.5 6v12" strokeDasharray="2 3" />
+    </svg>
+  );
+}
+
 export function WhatsAppIcon({ size = 18 }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true">

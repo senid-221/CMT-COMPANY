@@ -82,7 +82,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             <Link href="/orders" aria-label={t(locale, 'nav.orders')} className={ICON_LINK}>
               <CalendarIcon size={20} />
             </Link>
-            <Link href="/cart" aria-label={t(locale, 'nav.cart')} className={ICON_LINK}>
+            <Link href="/cart" aria-label={t(locale, 'nav.cart')} data-cart-target className={ICON_LINK}>
               <CartIcon size={20} />
               <CartBadge />
             </Link>

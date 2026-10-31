@@ -97,6 +97,12 @@ export default async function AdminOrderPage({
               <span>Delivery</span>
               <span>{order.deliveryFeeCents ? formatMoney(order.deliveryFeeCents, 'en') : 'Free'}</span>
             </div>
+            {order.discountCents > 0 ? (
+              <div className="flex justify-between text-muted">
+                <span>Coupon {order.couponCode}</span>
+                <span>−{formatMoney(order.discountCents, 'en')}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between font-display text-base font-bold">
               <span>Total</span>
               <span>{formatMoney(order.totalCents, 'en')}</span>

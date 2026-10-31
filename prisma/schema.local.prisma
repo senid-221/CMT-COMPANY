@@ -77,6 +77,8 @@ model Order {
   subtotalCents Int
   deliveryFeeCents Int
   totalCents    Int
+  couponCode      String?
+  discountCents   Int       @default(0)
   customer      Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   customerId    String?
   placedAt      DateTime    @default(now())
@@ -167,4 +169,25 @@ model PageView {
 
   @@index([createdAt])
   @@index([path])
+}
+
+model Coupon {
+  id                 String    @id @default(cuid())
+  code               String    @unique
+  kind               String    @default("percent")
+  percent            Int?
+  amountCents        Int?
+  minSubtotalCents   Int       @default(0)
+  maxDiscountCents   Int?
+  markets            String    @default("")
+  startsAt           DateTime?
+  endsAt             DateTime?
+  usageLimit         Int?
+  usedCount          Int       @default(0)
+  active             Boolean   @default(true)
+  label              String    @default("")
+  labelFr            String?
+  createdAt          DateTime  @default(now())
+
+  @@index([active])
 }

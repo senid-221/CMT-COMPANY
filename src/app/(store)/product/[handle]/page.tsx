@@ -7,7 +7,8 @@ import { formatMoney } from '@/lib/money';
 import { getMarket } from '@/lib/market';
 import { getProduct, getRelated, localizedName } from '@/lib/catalog';
 import { getApprovedReviews, reviewSummary } from '@/lib/reviews';
-import { ProductGrid } from '@/components/shop-ui';
+import { ProductRail } from '@/components/shop-ui';
+import { Rail } from '@/components/rail';
 import { AddToCart } from '@/components/add-to-cart';
 import { ReviewForm } from '@/components/review-form';
 
@@ -75,7 +76,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
           </p>
 
           <div className="flex items-center gap-4 pt-2">
-            <AddToCart handle={product.handle} locale={locale} />
+            <AddToCart handle={product.handle} locale={locale} image={product.image} />
             <Link href="/cart" className="text-sm font-semibold text-brand hover:underline">
               {t(locale, 'nav.cart')} →
             </Link>
@@ -101,9 +102,9 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
           </div>
 
           {reviews.length ? (
-            <ul className="space-y-3">
+            <Rail prevLabel={t(locale, 'rail.prev')} nextLabel={t(locale, 'rail.next')} autoAdvance>
               {reviews.map((review) => (
-                <li key={review.id} className="card p-4">
+                <li key={review.id} role="listitem" className="card w-[280px] p-4 sm:w-[320px]">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="font-semibold">{review.author}</p>
                     <p className="text-sm text-amber" aria-label={t(locale, 'reviews.star', { n: review.rating })}>
@@ -111,11 +112,11 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
                       <span className="text-muted">{'★'.repeat(5 - review.rating)}</span>
                     </p>
                   </div>
-                  <p className="mt-1.5 leading-relaxed text-ink/80">{review.body}</p>
+                  <p className="mt-1.5 line-clamp-4 leading-relaxed text-ink/80">{review.body}</p>
                   <p className="mt-2 text-xs text-muted">{dateFormat.format(new Date(review.createdAt))}</p>
                 </li>
               ))}
-            </ul>
+            </Rail>
           ) : (
             <p className="text-sm text-muted">{t(locale, 'reviews.empty')}</p>
           )}
@@ -130,7 +131,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
       {related.length ? (
         <section className="mt-10 space-y-4">
           <h2 className="font-display text-xl font-semibold">{t(locale, 'product.related')}</h2>
-          <ProductGrid products={related} locale={locale} market={market} />
+          <ProductRail products={related} locale={locale} market={market} prevLabel={t(locale, 'rail.prev')} nextLabel={t(locale, 'rail.next')} />
         </section>
       ) : null}
     </div>

@@ -6,6 +6,34 @@ import type { Market } from '@/lib/markets';
 import { FREE_DELIVERY_FROM_CENTS } from '@/lib/pricing';
 import { localizedName, type CategoryRow, type ProductRow, type SortKey } from '@/lib/catalog';
 import { ProductCard } from '@/components/product-card';
+import { Rail } from '@/components/rail';
+
+export function ProductRail({
+  products,
+  locale,
+  market,
+  prevLabel,
+  nextLabel,
+  autoAdvance = false,
+}: {
+  products: ProductRow[];
+  locale: Locale;
+  market: Market;
+  prevLabel: string;
+  nextLabel: string;
+  autoAdvance?: boolean;
+}) {
+  if (!products.length) return null;
+  return (
+    <Rail prevLabel={prevLabel} nextLabel={nextLabel} autoAdvance={autoAdvance}>
+      {products.map((p) => (
+        <div key={p.handle} role="listitem" className="w-[166px] sm:w-[195px] lg:w-[239px]">
+          <ProductCard product={p} locale={locale} market={market} />
+        </div>
+      ))}
+    </Rail>
+  );
+}
 
 export function ProductGrid({ products, locale, market }: { products: ProductRow[]; locale: Locale; market: Market }) {
   if (!products.length) {

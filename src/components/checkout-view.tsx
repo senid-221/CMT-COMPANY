@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { t, type Locale, type MessageKey } from '@/lib/i18n';
@@ -40,9 +40,83 @@ export function CheckoutView({
   const [method, setMethod] = useState<PaymentMethod>('cod');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCode, setAppliedCode] = useState<string | null>(null);
+  const [discountCents, setDiscountCents] = useState(0);
+  const [couponBusy, setCouponBusy] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
 
   const deliveryFee = feeFor(slot);
-  const total = subtotalCents + deliveryFee;
+  const total = Math.max(0, subtotalCents - discountCents) + deliveryFee;
+
+  const cartLines = priced.map((l) => ({ handle: l.handle, quantity: l.qty }));
+
+  async function checkCode(code: string) {
+    const response = await fetch('/api/coupons', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code, lines: cartLines }),
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as { ok?: boolean; error?: string; discountCents?: number; shortfallCents?: number };
+  }
+
+  function couponMessage(result: { error?: string; shortfallCents?: number }) {
+    const key = COUPON_ERRORS[result.error ?? 'invalid'] ?? 'coupon.error.invalid';
+    if (result.error === 'minSubtotal') {
+      return t(locale, key, { amount: formatMoney(result.shortfallCents ?? 0, locale, market) });
+    }
+    return t(locale, key);
+  }
+
+  /** The cart can change after a code is applied, so re-price it whenever the subtotal moves. */
+  useEffect(() => {
+    if (!appliedCode) {
+      setDiscountCents(0);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const result = await checkCode(appliedCode);
+      if (cancelled) return;
+      if (result?.ok) {
+        setDiscountCents(Math.max(0, Math.round(Number(result.discountCents ?? 0))));
+        return;
+      }
+      setAppliedCode(null);
+      setDiscountCents(0);
+      setCouponError(result ? couponMessage(result) : t(locale, 'coupon.error.invalid'));
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotalCents, appliedCode]);
+
+  async function applyCoupon() {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponBusy(true);
+    setCouponError(null);
+    const result = await checkCode(code).catch(() => null);
+    setCouponBusy(false);
+    if (result?.ok) {
+      setAppliedCode(code);
+      setDiscountCents(Math.max(0, Math.round(Number(result.discountCents ?? 0))));
+      setCouponInput(code);
+      return;
+    }
+    setAppliedCode(null);
+    setDiscountCents(0);
+    setCouponError(result ? couponMessage(result) : t(locale, 'coupon.error.invalid'));
+  }
+
+  function removeCoupon() {
+    setAppliedCode(null);
+    setDiscountCents(0);
+    setCouponError(null);
+    setCouponInput('');
+  }
 
   /** Each rail is billed in the currency its network actually settles in. */
   function currencyFor(chosen: PaymentMethod): Currency {
@@ -78,7 +152,7 @@ export function CheckoutView({
     setSubmitting(true);
 
     const body = {
-      lines: priced.map((l) => ({ handle: l.handle, quantity: l.qty })),
+      lines: cartLines,
       customerName: String(form.get('customerName') ?? ''),
       phone: String(form.get('phone') ?? ''),
       email: String(form.get('email') ?? '') || null,
@@ -87,6 +161,7 @@ export function CheckoutView({
       deliveryNote: String(form.get('deliveryNote') ?? '') || null,
       slot,
       paymentMethod: method,
+      coupon: appliedCode,
     };
 
     try {
@@ -98,6 +173,13 @@ export function CheckoutView({
       const data = await response.json();
       if (!response.ok) {
         const code = String(data?.error ?? 'failed');
+        if (code.startsWith('coupon:')) {
+          setAppliedCode(null);
+          setDiscountCents(0);
+          setCouponError(couponMessage({ error: code.slice('coupon:'.length) }));
+          setSubmitting(false);
+          return;
+        }
         setError(
           code === 'stale-cart'
             ? t(locale, 'checkout.stale')
@@ -176,6 +258,48 @@ export function CheckoutView({
         </div>
 
         <div className="space-y-2">
+          <h2 className="font-display font-semibold text-brand">{t(locale, 'coupon.codeLabel')}</h2>
+          <div className="flex gap-2">
+            <input
+              value={couponInput}
+              onChange={(event) => {
+                setCouponInput(event.target.value.toUpperCase().slice(0, 32));
+                if (appliedCode) {
+                  setAppliedCode(null);
+                  setDiscountCents(0);
+                }
+                setCouponError(null);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  void applyCoupon();
+                }
+              }}
+              aria-label={t(locale, 'coupon.codeLabel')}
+              placeholder={t(locale, 'coupon.placeholder')}
+              maxLength={32}
+              className="field font-display font-semibold uppercase tracking-wide"
+            />
+            {appliedCode ? (
+              <button type="button" className="btn btn-ghost btn-3d btn-3d-line shrink-0" onClick={removeCoupon}>
+                {t(locale, 'coupon.remove')}
+              </button>
+            ) : (
+              <button type="button" className="btn btn-primary btn-3d shrink-0" disabled={couponBusy || !couponInput.trim()} onClick={() => void applyCoupon()}>
+                {couponBusy ? '…' : t(locale, 'coupon.apply')}
+              </button>
+            )}
+          </div>
+          {appliedCode ? (
+            <p key={appliedCode} className="anim-rise text-sm font-semibold text-brand flip-in">
+              ✓ {t(locale, 'coupon.applied', { code: appliedCode })} · −{formatMoney(discountCents, locale, market)}
+            </p>
+          ) : null}
+          {couponError ? <p className="text-sm font-semibold text-danger">{couponError}</p> : null}
+        </div>
+
+        <div className="space-y-2">
           <h2 className="font-display font-semibold text-brand">{t(locale, 'checkout.payment')}</h2>
           {offered.map((chosen) => (
             <PaymentOption
@@ -202,7 +326,7 @@ export function CheckoutView({
 
         {error ? <p className="rounded-lg bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">{error}</p> : null}
 
-        <button type="submit" className="btn btn-primary w-full" disabled={submitting}>
+        <button type="submit" className="btn btn-primary btn-3d w-full" disabled={submitting}>
           {submitting ? '…' : actionLabel}
         </button>
       </form>
@@ -230,6 +354,14 @@ export function CheckoutView({
             <span>{t(locale, 'cart.delivery')}</span>
             <span>{formatMoney(deliveryFee, locale, market)}</span>
           </div>
+          {appliedCode && discountCents > 0 ? (
+            <div className="flex justify-between font-semibold text-brand">
+              <span>
+                {t(locale, 'coupon.saved')} · {appliedCode}
+              </span>
+              <span>−{formatMoney(discountCents, locale, market)}</span>
+            </div>
+          ) : null}
           <div className="flex justify-between pt-1 font-display text-base font-bold">
             <span>{t(locale, 'cart.total')}</span>
             <span className="text-brand">{formatMoney(total, locale, market)}</span>
@@ -240,8 +372,16 @@ export function CheckoutView({
   );
 }
 
-const PAYMENT_HINTS: Partial<Record<PaymentMethod, MessageKey>> = {
-  card: 'checkout.cardHint',
+const COUPON_ERRORS: Record<string, MessageKey> = {
+  invalid: 'coupon.error.invalid',
+  expired: 'coupon.error.expired',
+  notStarted: 'coupon.error.notStarted',
+  minSubtotal: 'coupon.error.minSubtotal',
+  used: 'coupon.error.used',
+  market: 'coupon.error.market',
+};
+
+const PAYMENT_HINTS: Partial<Record<PaymentMethod, MessageKey>> = {  card: 'checkout.cardHint',
   mtn: 'checkout.momoHint',
   orange: 'checkout.momoHint',
   wave: 'checkout.momoHint',

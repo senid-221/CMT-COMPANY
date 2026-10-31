@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     deliveryNote: typeof input.deliveryNote === 'string' ? input.deliveryNote : null,
     slot: input.slot as CreateOrderInput['slot'],
     paymentMethod,
+    coupon: typeof input.coupon === 'string' ? input.coupon : null,
     customerId: customer?.id ?? null,
     market,
   });

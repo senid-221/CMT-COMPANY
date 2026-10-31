@@ -138,6 +138,12 @@ export default async function OrderPage({
             </span>
             <span>{formatMoney(order.deliveryFeeCents, locale, market)}</span>
           </div>
+          {order.discountCents > 0 ? (
+            <div className="flex justify-between font-semibold text-brand">
+              <span>{t(locale, 'coupon.saved')} · {order.couponCode}</span>
+              <span>−{formatMoney(order.discountCents, locale, market)}</span>
+            </div>
+          ) : null}
           <div className="flex justify-between pt-1 font-display text-base font-bold">
             <span>{t(locale, 'cart.total')}</span>
             <span className="text-brand">{formatMoney(order.totalCents, locale, market)}</span>

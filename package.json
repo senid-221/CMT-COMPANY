@@ -14,7 +14,8 @@
     "catalog:extract": "node scripts/extract-catalog.mjs",
     "catalog:media": "node scripts/fetch-media.mjs && node scripts/optimize-media.mjs",
     "db:admin": "node prisma/seed-admin.mjs",
-    "db:seller": "node prisma/seed-seller.mjs"
+    "db:seller": "node prisma/seed-seller.mjs",
+    "db:coupons": "node prisma/seed-coupons.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
