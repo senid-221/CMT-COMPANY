@@ -164,6 +164,39 @@ async function main() {
     }
   }
 
+  const mtnPath = path.resolve('prisma/mtn-deals-catalog.json');
+  if (fs.existsSync(mtnPath)) {
+    const mtn = JSON.parse(fs.readFileSync(mtnPath, 'utf8'));
+    const categoryIdsByHandle = new Map(
+      (await prisma.category.findMany({ select: { id: true, handle: true } })).map((c) => [c.handle, c.id]),
+    );
+
+    for (const p of mtn.products) {
+      const categoryId = categoryIdsByHandle.get(p.category);
+      if (!categoryId) continue;
+      const data = {
+        name: p.name,
+        nameFr: p.nameFr ?? null,
+        searchName: `${p.name} ${p.nameFr ?? ''}`.toLowerCase(),
+        description: p.description,
+        descriptionFr: p.descriptionFr ?? null,
+        unit: p.unit,
+        priceCents: p.priceCents,
+        compareAtCents: p.compareAtCents ?? null,
+        image: p.image,
+        featured: p.featured === true,
+        stock: p.stock,
+      };
+
+      await prisma.product.upsert({
+        where: { handle: p.handle },
+        update: { ...data, categoryId },
+        create: { handle: p.handle, categoryId, ...data },
+      });
+      created++;
+    }
+  }
+
   console.log(`seeded ${categoryIds.size} categories, ${created} products`);
 }
 

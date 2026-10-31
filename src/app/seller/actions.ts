@@ -2,7 +2,7 @@
 
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { endSellerSession, requireSeller, startSellerSession } from '@/lib/seller/auth';
 import { hashPassword, verifyPassword } from '@/lib/password';
@@ -129,6 +129,7 @@ export async function saveSellerProduct(formData: FormData) {
     await prisma.product.create({ data: { ...data, featured: false, sellerId: seller.id } });
   }
 
+  revalidateTag('catalog');
   revalidatePath('/');
   revalidatePath('/shop');
   revalidatePath(`/product/${handle}`);
@@ -142,6 +143,7 @@ export async function deleteSellerProduct(formData: FormData) {
   if (!id) redirect('/seller?error=invalid');
   const result = await prisma.product.deleteMany({ where: { id, sellerId: seller.id } });
   if (!result.count) redirect('/seller?error=not-found');
+  revalidateTag('catalog');
   revalidatePath('/');
   revalidatePath('/shop');
   revalidatePath('/seller');

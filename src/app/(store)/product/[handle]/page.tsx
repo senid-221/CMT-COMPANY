@@ -111,7 +111,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
                     </p>
                   </div>
                   <p className="mt-1.5 leading-relaxed text-ink/80">{review.body}</p>
-                  <p className="mt-2 text-xs text-muted">{dateFormat.format(review.createdAt)}</p>
+                  <p className="mt-2 text-xs text-muted">{dateFormat.format(new Date(review.createdAt))}</p>
                 </li>
               ))}
             </ul>

@@ -69,7 +69,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             </div>
           </form>
 
-          <nav className="ml-auto flex items-center gap-1">
+          <nav className="ml-auto flex items-center gap-0 sm:gap-1">
             <MenuButton locale={locale} items={menuItems(locale)} />
             <LocaleSwitch locale={locale} />
             <Link href="/notifications" aria-label={t(locale, 'nav.notifications')} className={ICON_LINK}>
@@ -82,7 +82,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
               <CartIcon size={20} />
               <CartBadge />
             </Link>
-            <Link href="/saved" aria-label={t(locale, 'nav.saved')} className={ICON_LINK}>
+            <Link href="/saved" aria-label={t(locale, 'nav.saved')} className={`${ICON_LINK} hidden sm:grid`}>
               <BookmarkIcon size={20} />
               <SavedBadge />
             </Link>

@@ -181,6 +181,7 @@ export function CheckoutView({
               {t(locale, 'checkout.rate', { rate: new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US').format(payments.xofRate) })}
             </p>
           ) : null}
+          <PaymentSteps locale={locale} method={method} />
         </div>
 
         {error ? <p className="rounded-lg bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">{error}</p> : null}
@@ -228,6 +229,56 @@ const MOMO_LABELS: { method: 'mtn' | 'orange' | 'wave'; key: MessageKey }[] = [
   { method: 'orange', key: 'pay.method.orange' },
   { method: 'wave', key: 'pay.method.wave' },
 ];
+
+const PAYMENT_LABEL: Record<PaymentMethod, MessageKey> = {
+  cod: 'pay.method.cod',
+  card: 'pay.method.card',
+  mtn: 'pay.method.mtn',
+  orange: 'pay.method.orange',
+  wave: 'pay.method.wave',
+};
+
+const PAYMENT_STEPS: Record<PaymentMethod, MessageKey[]> = {
+  cod: ['pay.steps.cod'],
+  card: ['pay.steps.card.1', 'pay.steps.card.2', 'pay.steps.card.3'],
+  mtn: ['pay.steps.mtn.1', 'pay.steps.mtn.2', 'pay.steps.mtn.3'],
+  orange: ['pay.steps.orange.1', 'pay.steps.orange.2', 'pay.steps.orange.3'],
+  wave: ['pay.steps.wave.1', 'pay.steps.wave.2', 'pay.steps.wave.3'],
+};
+
+function PaymentSteps({ locale, method }: { locale: Locale; method: PaymentMethod }) {
+  const steps = PAYMENT_STEPS[method];
+  return (
+    <div className="rounded-xl border border-line bg-surface-alt p-4">
+      <p className="text-sm font-semibold">
+        {t(locale, 'pay.steps.title')} · {t(locale, PAYMENT_LABEL[method])}
+      </p>
+      {steps.length === 1 ? (
+        <p className="mt-1.5 text-sm text-muted">{t(locale, steps[0])}</p>
+      ) : (
+        <ol className="mt-2 space-y-2 text-sm text-muted">
+          {steps.map((key, index) => (
+            <li key={key} className="flex gap-2.5">
+              <span className="mt-px grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand/10 text-[11px] font-bold text-brand">
+                {index + 1}
+              </span>
+              <span>{t(locale, key)}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+      {method === 'cod' ? null : (
+        <p className="mt-3 flex items-start gap-2 rounded-lg bg-brand/5 px-3 py-2 text-xs font-medium text-brand">
+          <svg viewBox="0 0 24 24" className="mt-px h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <rect x="4" y="10" width="16" height="10" rx="2" />
+            <path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
+          </svg>
+          {t(locale, 'pay.steps.security')}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function PaymentOption({
   method,

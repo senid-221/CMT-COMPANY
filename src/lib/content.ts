@@ -1,3 +1,5 @@
+import { unstable_cache, revalidateTag } from 'next/cache';
+import { cache } from 'react';
 import { prisma } from '@/lib/db';
 import { t, type Locale } from '@/lib/i18n';
 
@@ -67,19 +69,28 @@ export function normalizeContent(input: unknown): SiteContent {
   };
 }
 
-export async function getContent(): Promise<SiteContent> {
-  try {
+const fetchContent = unstable_cache(
+  async (): Promise<SiteContent> => {
     const row = await prisma.siteContent.findUnique({ where: { id: ROW_ID }, select: { data: true } });
     if (!row) return CONTENT_DEFAULTS;
     return normalizeContent(JSON.parse(row.data));
+  },
+  ['site:content'],
+  { revalidate: 600, tags: ['content'] },
+);
+
+export const getContent = cache(async (): Promise<SiteContent> => {
+  try {
+    return await fetchContent();
   } catch {
     return CONTENT_DEFAULTS;
   }
-}
+});
 
 export async function saveContent(content: SiteContent) {
   const data = JSON.stringify(normalizeContent(content));
   await prisma.siteContent.upsert({ where: { id: ROW_ID }, update: { data }, create: { id: ROW_ID, data } });
+  revalidateTag('content');
 }
 
 export function pickText(value: LocalizedText, locale: Locale) {

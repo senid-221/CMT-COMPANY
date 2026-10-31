@@ -82,16 +82,16 @@ export function CartView({ locale }: { locale: Locale }) {
   return (
     <div className="shell grid gap-6 py-8 lg:grid-cols-[1fr_340px]">
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h1 className="font-display text-2xl font-bold">{t(locale, 'cart.title')}</h1>
-          <button type="button" onClick={clear} className="text-sm font-semibold text-danger hover:underline">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="min-w-0 font-display text-2xl font-bold">{t(locale, 'cart.title')}</h1>
+          <button type="button" onClick={clear} className="shrink-0 whitespace-nowrap text-sm font-semibold text-danger hover:underline">
             {t(locale, 'cart.clear')}
           </button>
         </div>
         {failed ? <p className="rounded-lg bg-warning/15 px-4 py-3 text-sm">{t(locale, 'cart.loadFailed')}</p> : null}
 
         {priced.map((line) => (
-          <article key={line.handle} className="card flex items-center gap-4 p-3">
+          <article key={line.handle} className="card flex flex-wrap items-center gap-3 p-3 sm:flex-nowrap sm:gap-4">
             <img src={line.image} alt="" width={72} height={72} className="h-16 w-16 shrink-0 object-contain" />
             <div className="min-w-0 flex-1">
               <Link href={`/product/${line.handle}`} className="font-display font-semibold hover:text-brand">
@@ -101,19 +101,21 @@ export function CartView({ locale }: { locale: Locale }) {
                 {line.unit} · {formatMoney(line.priceCents, locale)}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={() => addQty(line.handle, -1)} className="grid h-8 w-8 place-items-center rounded-full border border-line text-lg" aria-label={t(locale, 'cart.decrease')}>
-                −
-              </button>
-              <span className="min-w-6 text-center font-bold">{line.qty}</span>
-              <button type="button" onClick={() => addQty(line.handle, 1)} className="grid h-8 w-8 place-items-center rounded-full bg-brand text-lg text-white" aria-label={t(locale, 'cart.increase')}>
-                +
+            <div className="flex w-full items-center gap-3 sm:w-auto sm:gap-2">
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => addQty(line.handle, -1)} className="grid h-8 w-8 place-items-center rounded-full border border-line text-lg" aria-label={t(locale, 'cart.decrease')}>
+                  −
+                </button>
+                <span className="min-w-6 text-center font-bold">{line.qty}</span>
+                <button type="button" onClick={() => addQty(line.handle, 1)} className="grid h-8 w-8 place-items-center rounded-full bg-brand text-lg text-white" aria-label={t(locale, 'cart.increase')}>
+                  +
+                </button>
+              </div>
+              <div className="min-w-0 flex-1 text-right font-display font-bold sm:w-24 sm:flex-none">{formatMoney(line.priceCents * line.qty, locale)}</div>
+              <button type="button" onClick={() => setQty(line.handle, 0)} className="shrink-0 text-xs font-semibold text-danger hover:underline">
+                {t(locale, 'cart.remove')}
               </button>
             </div>
-            <div className="w-24 text-right font-display font-bold">{formatMoney(line.priceCents * line.qty, locale)}</div>
-            <button type="button" onClick={() => setQty(line.handle, 0)} className="text-xs font-semibold text-danger hover:underline">
-              {t(locale, 'cart.remove')}
-            </button>
           </article>
         ))}
       </div>

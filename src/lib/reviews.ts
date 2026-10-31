@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+import { cache } from 'react';
 import { prisma } from '@/lib/db';
 
 export type ReviewRow = {
@@ -5,17 +7,24 @@ export type ReviewRow = {
   author: string;
   rating: number;
   body: string;
-  createdAt: Date;
+  createdAt: string;
 };
 
-export async function getApprovedReviews(handle: string): Promise<ReviewRow[]> {
-  return prisma.review.findMany({
-    where: { product: { handle }, status: 'approved' },
-    orderBy: { createdAt: 'desc' },
-    take: 30,
-    select: { id: true, author: true, rating: true, body: true, createdAt: true },
-  });
-}
+const fetchApprovedReviews = unstable_cache(
+  async (slug: string): Promise<ReviewRow[]> => {
+    const rows = await prisma.review.findMany({
+      where: { product: { handle: slug }, status: 'approved' },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      select: { id: true, author: true, rating: true, body: true, createdAt: true },
+    });
+    return rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString() }));
+  },
+  ['catalog:reviews'],
+  { revalidate: 300, tags: ['catalog'] },
+);
+
+export const getApprovedReviews = cache((handle: string) => fetchApprovedReviews(handle));
 
 export function reviewSummary(reviews: { rating: number }[]) {
   if (!reviews.length) return { count: 0, average: 0 };

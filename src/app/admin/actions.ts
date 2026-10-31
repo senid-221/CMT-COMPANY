@@ -2,7 +2,7 @@
 
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { endSession, requireAdmin, startSession } from '@/lib/admin/auth';
 import { verifyPassword } from '@/lib/password';
@@ -163,6 +163,7 @@ export async function saveProduct(formData: FormData) {
     await prisma.product.create({ data });
   }
 
+  revalidateTag('catalog');
   revalidatePath('/');
   revalidatePath('/shop');
   revalidatePath(`/product/${handle}`);
@@ -174,6 +175,7 @@ export async function deleteProduct(formData: FormData) {
   const id = String(formData.get('id') ?? '');
   if (!id) redirect('/admin/products?error=invalid');
   await prisma.product.delete({ where: { id } }).catch(() => null);
+  revalidateTag('catalog');
   revalidatePath('/');
   revalidatePath('/shop');
   redirect('/admin/products?deleted=1');
@@ -200,6 +202,7 @@ export async function setReviewStatus(formData: FormData) {
     data: { status },
     select: { product: { select: { handle: true } } },
   });
+  revalidateTag('catalog');
   revalidatePath('/admin/reviews');
   revalidatePath(`/product/${review.product.handle}`);
   redirect('/admin/reviews?saved=1');
@@ -213,7 +216,10 @@ export async function deleteReview(formData: FormData) {
     where: { id },
     select: { product: { select: { handle: true } } },
   }).catch(() => null);
-  if (review) revalidatePath(`/product/${review.product.handle}`);
+  if (review) {
+    revalidateTag('catalog');
+    revalidatePath(`/product/${review.product.handle}`);
+  }
   revalidatePath('/admin/reviews');
   redirect('/admin/reviews?deleted=1');
 }
