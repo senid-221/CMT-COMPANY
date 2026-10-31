@@ -8,10 +8,14 @@ Target: Hostinger VPS (Ubuntu 22.04/24.04) + Neon Postgres. Node 20 or newer.
 2. Open the project → **Connection Details** → copy the **pooled** connection string (host ends with `-pooler`).
 3. Use the pooled URL in the app (`prisma` needs one connection, not many).
 
+The database name in the URL must stay a single word. Prisma cannot open a database whose name contains a space
+(for example `CMB DATABASE`): it reports "Can't reach database server" and every page that reads data returns 500,
+while `/admin/login` keeps working because it needs no database. Use `citymarket`, `neondb` or any other single word.
+
 `.env` on the server:
 
 ```
-DATABASE_URL="postgresql://<user>:<password>@<ep-name>-pooler.<region>.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://<user>:<password>@<ep-name>-pooler.<region>.aws.neon.tech/citymarket?sslmode=require"
 NEXT_PUBLIC_SITE_URL="https://<your-domain>"
 NEXT_PUBLIC_WHATSAPP=""
 NEXT_PUBLIC_SUPPORT_EMAIL=""

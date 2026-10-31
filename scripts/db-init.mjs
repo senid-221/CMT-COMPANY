@@ -26,6 +26,14 @@ if (url.includes('*****') || !/^postgres(ql)?:\/\//.test(url)) {
   process.exit(1);
 }
 
+// Prisma cannot open a database whose name contains a space; it reports
+// "Can't reach database server" and every data-backed page returns 500.
+const database = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''));
+if (/\s/.test(database)) {
+  console.error(`The database name "${database}" contains a space. Create a database named citymarket in Neon and put it in DATABASE_URL.`);
+  process.exit(1);
+}
+
 // .env is authoritative here: .env.local still points at the local SQLite file,
 // and the seed scripts must not fall back to it.
 const childEnv = { ...process.env, ...fileVars, DATABASE_URL: (fileVars.DIRECT_URL ?? '').trim() || url };
