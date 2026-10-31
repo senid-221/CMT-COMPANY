@@ -10,6 +10,7 @@ import { Logo } from '@/components/logo';
 import { MenuButton, ThemeToggle, type MenuItem } from '@/components/nav-controls';
 import { BellIcon, BookmarkIcon, CalendarIcon, CartIcon, SearchIcon, UserIcon } from '@/components/icons';
 import { VisitorTracker } from '@/components/visitor-tracker';
+import { WhatsAppFab } from '@/components/whatsapp-fab';
 import { INFO_PAGES } from '@/lib/info';
 
 const ICON_LINK = 'relative grid h-10 w-10 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand';
@@ -200,6 +201,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
           </div>
         </div>
       </footer>
+
+      <WhatsAppFab phone={whatsapp} locale={locale} />
     </div>
   );
 }
