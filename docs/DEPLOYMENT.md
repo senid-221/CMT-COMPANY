@@ -71,6 +71,10 @@ pm2 save && pm2 startup
 `.env`, run it, and the app picks the tables up without a redeploy. It finishes by regenerating the local SQLite
 client, so local development keeps using `prisma/dev.db`.
 
+When Node cannot be run at all, paste `prisma/neon-schema.sql` and then `prisma/neon-data.sql` into the Neon SQL
+editor. That creates the tables and the catalogue; the admin and seller accounts still come from `npm run db:admin`
+and `npm run db:seller`.
+
 The dashboard lives at `/admin`. Re-run `npm run db:admin` any time you want to reset the admin password.
 
 The seller portal lives at `/seller`. Re-run `npm run db:seller` after changing `SELLER_PASSWORD` to reset the
