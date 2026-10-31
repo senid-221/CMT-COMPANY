@@ -124,6 +124,46 @@ async function main() {
     created++;
   }
 
+  const importedPath = path.resolve('prisma/agaseke-catalog.json');
+  if (fs.existsSync(importedPath)) {
+    const imported = JSON.parse(fs.readFileSync(importedPath, 'utf8'));
+    const categoryIdsByHandle = new Map();
+
+    for (const c of imported.categories) {
+      const row = await prisma.category.upsert({
+        where: { handle: c.handle },
+        update: { name: c.name, nameFr: c.nameFr ?? null, image: c.image, sort: c.sort },
+        create: { handle: c.handle, name: c.name, nameFr: c.nameFr ?? null, image: c.image, sort: c.sort },
+      });
+      categoryIdsByHandle.set(c.handle, row.id);
+    }
+
+    for (const p of imported.products) {
+      const categoryId = categoryIdsByHandle.get(p.category);
+      if (!categoryId) continue;
+      const data = {
+        name: p.name,
+        nameFr: p.nameFr ?? null,
+        searchName: `${p.name} ${p.nameFr ?? ''}`.toLowerCase(),
+        description: p.description,
+        descriptionFr: p.descriptionFr ?? null,
+        unit: p.unit,
+        priceCents: p.priceCents,
+        compareAtCents: p.compareAtCents ?? null,
+        image: p.image,
+        featured: p.featured,
+        stock: p.stock,
+      };
+
+      await prisma.product.upsert({
+        where: { handle: p.handle },
+        update: { ...data, categoryId },
+        create: { handle: p.handle, categoryId, ...data },
+      });
+      created++;
+    }
+  }
+
   console.log(`seeded ${categoryIds.size} categories, ${created} products`);
 }
 

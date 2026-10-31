@@ -61,14 +61,15 @@ node -v        # expect v22.x
 cd /opt && git clone <your-repo> citymarket && cd citymarket
 cp .env.example .env      # paste the Neon and admin values
 npm ci
-npx prisma db push        # creates the tables
-node prisma/seed.mjs      # loads 9 categories + 50 products
-npm run db:admin          # creates the admin account from ADMIN_EMAIL / ADMIN_PASSWORD
-npm run db:seller         # creates HighQuality Ltd from SELLER_EMAIL / SELLER_PASSWORD and assigns every unowned product to it
+npm run db:init           # creates the tables, loads 19 categories + 163 products, creates admin and seller
 npm run build
 pm2 start npm --name citymarket -- start
 pm2 save && pm2 startup
 ```
+
+`npm run db:init` can also be run from a laptop against Neon when the host has no shell: put the Neon strings in
+`.env`, run it, and the app picks the tables up without a redeploy. It finishes by regenerating the local SQLite
+client, so local development keeps using `prisma/dev.db`.
 
 The dashboard lives at `/admin`. Re-run `npm run db:admin` any time you want to reset the admin password.
 
