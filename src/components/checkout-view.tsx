@@ -268,6 +268,14 @@ function PaymentOption({
   );
 }
 
+const LOGO_CHIP = 'flex h-9 shrink-0 items-center justify-center rounded-md border border-line bg-white px-1.5';
+
+const BRAND_MARKS: Record<'mtn' | 'orange' | 'wave', { src: string; className: string }> = {
+  mtn: { src: '/media/payments/mtn.svg', className: 'h-5 w-auto' },
+  orange: { src: '/media/payments/orange-money.svg', className: 'h-3 w-auto' },
+  wave: { src: '/media/payments/wave.png', className: 'h-4 w-auto' },
+};
+
 function PaymentMark({ method }: { method: PaymentMethod }) {
   if (method === 'cod') {
     return (
@@ -282,23 +290,16 @@ function PaymentMark({ method }: { method: PaymentMethod }) {
   }
   if (method === 'card') {
     return (
-      <span className="flex h-9 w-12 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600">
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-          <rect x="2.5" y="5" width="19" height="14" rx="2" />
-          <path d="M2.5 9.5h19" />
-          <path d="M6 15h4" strokeLinecap="round" />
-        </svg>
+      <span className={`${LOGO_CHIP} w-20 gap-1.5 px-2`}>
+        <img src="/media/payments/visa.svg" alt="" width={1000} height={325} className="h-3 w-auto" />
+        <img src="/media/payments/mastercard.svg" alt="" width={1000} height={618} className="h-4 w-auto" />
       </span>
     );
   }
-  const styles: Record<'mtn' | 'orange' | 'wave', string> = {
-    mtn: 'bg-[#ffcc00] text-[#003b5c]',
-    orange: 'bg-[#ff7900] text-white',
-    wave: 'bg-[#1dc8ff] text-[#041e42]',
-  };
+  const mark = BRAND_MARKS[method];
   return (
-    <span className={`flex h-9 w-12 shrink-0 items-center justify-center rounded-md text-[10px] font-extrabold lowercase tracking-tight ${styles[method]}`}>
-      {method}
+    <span className={`${LOGO_CHIP} w-14`}>
+      <img src={mark.src} alt="" className={mark.className} />
     </span>
   );
 }
