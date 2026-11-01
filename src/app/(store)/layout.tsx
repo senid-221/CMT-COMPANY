@@ -20,6 +20,7 @@ const ICON_LINK = 'relative grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place
 function menuItems(locale: Locale): MenuItem[] {
   return [
     { href: '/shop', label: t(locale, 'nav.shop') },
+    { href: '/meal-planner', label: t(locale, 'nav.planner') },
     { href: '/track', label: t(locale, 'nav.track') },
     { href: '/orders', label: t(locale, 'nav.orders') },
     { href: '/saved', label: t(locale, 'nav.saved') },
@@ -134,6 +135,11 @@ export default async function StoreLayout({ children }: { children: React.ReactN
               <li>
                 <Link href="/shop?deals=1" className="hover:text-brand">
                   {t(locale, 'home.deals')}
+                </Link>
+              </li>
+              <li>
+                <Link href="/meal-planner" className="hover:text-brand">
+                  {t(locale, 'nav.planner')}
                 </Link>
               </li>
               {categories.slice(0, 4).map((category) => (

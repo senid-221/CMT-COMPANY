@@ -178,6 +178,27 @@ PAY_BANK_HOLDER=""
 a convenience, not the rule. The new `Order.market` column means the schema must be pushed to Neon before this goes
 live: `npx prisma db push --schema=prisma/schema.prisma`.
 
+## 3e. Meal planner (Luna)
+
+`/meal-planner` runs a three-step quiz (meal style, dietary needs, shopping rhythm + optional budget) and asks GPT-4o for a
+plan built **only** from grocery products that are in stock. The model returns product handles; the server drops any handle
+that is not in the catalogue and re-prices every line from the database before returning the plan, so a model mistake can
+never invent a product or a price. The shopper then adds the whole plan to the normal cart in one click.
+
+The feature is off until the OpenAI key is set. Add it to `/opt/citymarket/.env` (server-only, never `NEXT_PUBLIC_`):
+
+```
+OPENAI_API_KEY="<key from platform.openai.com>"
+OPENAI_MODEL="gpt-4o"
+```
+
+`OPENAI_MODEL` is optional and defaults to `gpt-4o`. Restart pm2 after editing. With no key, the page shows an
+"unavailable" note and `POST /api/meal-planner` answers 503 — the rest of the storefront is unaffected.
+
+Limits: five plans per IP per ten minutes, a 45-second upstream timeout, and a 60-second route budget. Until the key is
+set, the page shows the unavailable note and the route answers 503. Billing comes from your OpenAI account; a week-long
+plan is a single chat completion.
+
 ## 4. Nginx + HTTPS
 
 `/etc/nginx/sites-available/citymarket`:
