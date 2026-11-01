@@ -3,15 +3,15 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useCartLines } from '@/lib/cart';
+import { useCartLines, setQty } from '@/lib/cart';
 import { recordOrder } from '@/lib/local-orders';
 import { formatMoney, formatUnits } from '@/lib/money';
 import { t, type Locale, type MessageKey } from '@/lib/i18n';
 import { paymentMethodKey, slotKey, statusKey } from '@/lib/order-labels';
 import type { Currency, Market } from '@/lib/markets';
-import type { ChatDraft, ChatEvent, ChatOrder, ChatProduct } from '@/lib/chat-types';
+import type { ChatCart, ChatDraft, ChatEvent, ChatOrder, ChatProduct } from '@/lib/chat-types';
 import { AddToCart } from '@/components/add-to-cart';
-import { CloseIcon, RefreshIcon, SendIcon, ShieldIcon, SparkleIcon, WhatsAppIcon } from '@/components/icons';
+import { CartIcon, CloseIcon, RefreshIcon, SendIcon, ShieldIcon, SparkleIcon, WhatsAppIcon } from '@/components/icons';
 
 const STORAGE_KEY = 'cmb_chat_v1';
 const MAX_STORED = 30;
@@ -32,12 +32,18 @@ type Message = {
   activity?: MessageKey;
   products?: ChatProduct[];
   orders?: ChatOrder[];
+  cart?: ChatCart;
   draft?: DraftState;
   error?: MessageKey;
 };
 
 const TOOL_KEY: Record<string, MessageKey> = {
   search_products: 'chat.tool.search',
+  add_to_cart: 'chat.tool.cart',
+  update_cart: 'chat.tool.cart',
+  view_cart: 'chat.tool.cart',
+  clear_cart: 'chat.tool.cart',
+  get_store_info: 'chat.tool.info',
   get_order_status: 'chat.tool.order',
   get_my_orders: 'chat.tool.orders',
   prepare_order: 'chat.tool.draft',
@@ -166,6 +172,50 @@ function OrderCard({ order, locale, market }: { order: ChatOrder; locale: Locale
       </div>
       <Link href={`/order/${order.number}`} className="mt-1.5 inline-flex text-[11px] font-semibold text-brand hover:underline">
         {t(locale, 'chat.order.view')} →
+      </Link>
+    </div>
+  );
+}
+
+function CartCard({ cart, locale, market }: { cart: ChatCart; locale: Locale; market: Market }) {
+  if (!cart.lines.length) {
+    return (
+      <div className="mt-2 w-full rounded-xl border border-line bg-canvas p-3">
+        <p className="flex items-center gap-1.5 font-display text-[13px] font-bold text-brand">
+          <CartIcon size={14} />
+          {t(locale, 'chat.cart.title')}
+        </p>
+        <p className="mt-1 text-[11px] text-muted">{t(locale, 'cart.empty')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 w-full rounded-xl border border-line bg-canvas p-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 font-display text-[13px] font-bold text-brand">
+          <CartIcon size={14} />
+          {t(locale, 'chat.cart.title')}
+        </p>
+        <span className="text-[11px] text-muted">{t(locale, 'cart.items', { n: cart.itemCount })}</span>
+      </div>
+      <ul className="mt-2 space-y-1 text-[11px]">
+        {cart.lines.slice(0, 6).map((line) => (
+          <li key={line.handle} className="flex justify-between gap-3">
+            <span className="min-w-0 truncate">
+              {line.qty} × {locale === 'fr' && line.nameFr ? line.nameFr : line.name}
+            </span>
+            <span className="shrink-0 font-semibold">{formatMoney(line.lineTotalCents, locale, market)}</span>
+          </li>
+        ))}
+      </ul>
+      {cart.lines.length > 6 ? <p className="mt-1 text-[10px] text-muted">+{cart.lines.length - 6}</p> : null}
+      <div className="mt-2 flex items-center justify-between border-t border-line pt-2">
+        <span className="text-[11px] text-muted">{t(locale, 'cart.subtotal')}</span>
+        <span className="font-display text-sm font-bold">{formatMoney(cart.subtotalCents, locale, market)}</span>
+      </div>
+      <Link href="/cart" className="mt-1.5 inline-flex text-[11px] font-semibold text-brand hover:underline">
+        {t(locale, 'chat.cart.view')} →
       </Link>
     </div>
   );
@@ -364,6 +414,7 @@ export function ChatWidget({
         text: message.text.slice(0, 8000),
         products: message.products?.slice(0, 8),
         orders: message.orders?.slice(0, 5),
+        cart: message.cart,
         draft: message.draft
           ? {
               draft: message.draft.draft,
@@ -527,6 +578,10 @@ export function ChatWidget({
           } else if (event.type === 'orders') {
             produced = true;
             updateMessage(assistantId, (message) => ({ ...message, orders: mergeOrders(message.orders, event.orders) }));
+          } else if (event.type === 'cart') {
+            produced = true;
+            for (const op of event.ops) setQty(op.handle, op.qty);
+            updateMessage(assistantId, (message) => ({ ...message, cart: event.cart, activity: 'chat.typing' }));
           } else if (event.type === 'draft') {
             produced = true;
             updateMessage(assistantId, (message) => ({ ...message, draft: { draft: event.draft, status: 'pending' } }));
@@ -764,7 +819,10 @@ export function ChatWidget({
                   );
                 }
 
-                const waiting = !message.text && !message.error && (Boolean(message.activity) || (!message.products?.length && !message.orders?.length && !message.draft));
+                const waiting =
+                  !message.text &&
+                  !message.error &&
+                  (Boolean(message.activity) || (!message.products?.length && !message.orders?.length && !message.cart && !message.draft));
 
                 return (
                   <div key={message.id} className="flex items-start gap-2">
@@ -802,6 +860,8 @@ export function ChatWidget({
                       {message.orders?.map((order) => (
                         <OrderCard key={order.number} order={order} locale={locale} market={market} />
                       ))}
+
+                      {message.cart ? <CartCard cart={message.cart} locale={locale} market={market} /> : null}
 
                       {message.draft ? (
                         <DraftCard

@@ -206,6 +206,12 @@ delivery and order questions, searches the live catalogue, offers product cards 
 can prepare a real order. She replies in the shopper's language (English, French, Ikinyarwanda, Kiswahili, others),
 because the model is instructed to mirror the language of the customer's last message — no per-language copy to maintain.
 
+She also manages the shopper's cart — `add_to_cart`, `update_cart`, `view_cart` and `clear_cart` change the same local
+cart as the storefront and the widget renders a cart summary card — and answers store-policy questions from
+`get_store_info`, which reads delivery windows and fees, the market's payment rails, returns and order-change policy,
+support contacts and the live coupon codes (filtered to the shopper's market). Those tools are read-only against the
+catalogue and cart, so they need no extra configuration beyond the variables below.
+
 It uses the same `OPENAI_API_KEY` as the meal planner (§3e); no extra key or schema change is needed. Two optional
 overrides exist for both features:
 

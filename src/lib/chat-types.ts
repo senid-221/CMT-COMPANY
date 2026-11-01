@@ -61,11 +61,31 @@ export type ChatDraft = {
   paymentAmount: number | null;
 };
 
+export type ChatCartLine = {
+  handle: string;
+  name: string;
+  nameFr: string | null;
+  unit: string;
+  image: string;
+  qty: number;
+  priceCents: number;
+  lineTotalCents: number;
+};
+
+export type ChatCart = {
+  lines: ChatCartLine[];
+  subtotalCents: number;
+  itemCount: number;
+};
+
+export type ChatCartOp = { handle: string; qty: number };
+
 export type ChatEvent =
   | { type: 'delta'; text: string }
   | { type: 'tool'; name: string }
   | { type: 'products'; products: ChatProduct[] }
   | { type: 'orders'; orders: ChatOrder[] }
+  | { type: 'cart'; ops: ChatCartOp[]; cart: ChatCart }
   | { type: 'draft'; draft: ChatDraft }
   | { type: 'error'; code: string }
   | { type: 'done' };
