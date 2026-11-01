@@ -13,6 +13,9 @@ import { MenuButton, ThemeToggle, type MenuItem } from '@/components/nav-control
 import { BellIcon, BookmarkIcon, CalendarIcon, CartIcon, SearchIcon, UserIcon } from '@/components/icons';
 import { VisitorTracker } from '@/components/visitor-tracker';
 import { WhatsAppFab } from '@/components/whatsapp-fab';
+import { ChatWidget } from '@/components/chat-widget';
+import { getCustomer } from '@/lib/customer/auth';
+import { chatConfigured } from '@/lib/chat';
 import { INFO_PAGES } from '@/lib/info';
 
 const ICON_LINK = 'relative grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand';
@@ -37,7 +40,7 @@ function infoLabel(locale: Locale, slug: string) {
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const market = await getMarket();
-  const [categories, content] = await Promise.all([getCategories(), getContent()]);
+  const [categories, content, customer] = await Promise.all([getCategories(), getContent(), getCustomer()]);
   const announcement = pickText(content.announcement.text, locale);
   const whatsapp = (process.env.NEXT_PUBLIC_WHATSAPP ?? '').replace(/\D/g, '');
 
@@ -212,6 +215,13 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         </div>
       </footer>
 
+      <ChatWidget
+        locale={locale}
+        market={market}
+        customer={customer ? { name: customer.name, phone: customer.phone } : null}
+        available={chatConfigured()}
+        whatsapp={whatsapp}
+      />
       <WhatsAppFab phone={whatsapp} locale={locale} />
     </div>
   );

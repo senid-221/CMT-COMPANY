@@ -199,6 +199,39 @@ Limits: five plans per IP per ten minutes, a 45-second upstream timeout, and a 6
 set, the page shows the unavailable note and the route answers 503. Billing comes from your OpenAI account; a week-long
 plan is a single chat completion.
 
+## 3f. Live chat (Luna)
+
+Every storefront page has a floating chat button that opens **Luna**, the store's AI assistant. She answers product,
+delivery and order questions, searches the live catalogue, offers product cards with the normal Add to cart button, and
+can prepare a real order. She replies in the shopper's language (English, French, Ikinyarwanda, Kiswahili, others),
+because the model is instructed to mirror the language of the customer's last message — no per-language copy to maintain.
+
+It uses the same `OPENAI_API_KEY` as the meal planner (§3e); no extra key or schema change is needed. Two optional
+overrides exist for both features:
+
+```
+OPENAI_MODEL="gpt-4o"
+OPENAI_BASE_URL="<optional compatible endpoint>"
+```
+
+`OPENAI_BASE_URL` is unset in production and only useful for a local fixture. `AUTH_SECRET` must be at least 32
+characters (already required for sessions) because the order draft is signed with it. With no key the widget opens in
+an offline state that links to the shop and WhatsApp, and `POST /api/chat` answers 503.
+
+How ordering stays safe:
+
+- The model can only call `prepare_order`, which validates stock and every checkout field, re-prices the lines from the
+  database, and returns a **signed 15-minute draft**. Nothing is written yet; the shopper must tap **Confirm order**.
+- `POST /api/chat/order` re-checks the token signature, expiry, IP and market, consumes its nonce (a replay answers
+  409 `duplicate`), then calls the same `createOrder` as the checkout page. Online methods start the normal
+  Flutterwave payment; the confirmation card shows **Pay now** and the order page.
+- Order status is only returned when the phone digits match the order phone or the shopper is signed in.
+- The assistant never asks for card numbers, PINs or CVVs, and no payment data is sent to the model.
+
+Limits: 12 chat messages per IP per 5 minutes (32 KB body), 6 confirmations per minute (8 KB body), a 45-second upstream
+timeout and 60-second route budget, with up to four tool rounds per reply. Nginx must forward `X-Forwarded-For` (§4) so
+these limits apply per shopper rather than per proxy.
+
 ## 4. Nginx + HTTPS
 
 `/etc/nginx/sites-available/citymarket`:
