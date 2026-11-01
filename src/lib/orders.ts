@@ -5,6 +5,7 @@ import { isOnlineMethod, isPaymentMethod, type PaymentMethod } from './payment-m
 import { methodAvailable } from './payments';
 import { toUnits } from './money';
 import { evaluateCode, normalizeCode } from './coupons';
+import { storefrontActive } from './vendors';
 import type { Market } from './markets';
 
 export type CreateOrderInput = {
@@ -59,7 +60,18 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
 
   const products = await prisma.product.findMany({
     where: { handle: { in: wanted.map((w) => w.handle) } },
-    select: { id: true, handle: true, name: true, unit: true, priceCents: true, stock: true },
+    select: {
+      id: true,
+      handle: true,
+      name: true,
+      unit: true,
+      priceCents: true,
+      stock: true,
+      sellerId: true,
+      seller: {
+        select: { id: true, name: true, subaccountId: true, storefrontUntil: true, suspendedAt: true },
+      },
+    },
   });
   const byHandle = new Map(products.map((p) => [p.handle, p]));
 
@@ -67,6 +79,7 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
   for (const w of wanted) {
     const product = byHandle.get(w.handle);
     if (!product) return { ok: false, error: 'stale-cart' };
+    if (product.seller && !storefrontActive(product.seller)) return { ok: false, error: 'stale-cart' };
     if (w.quantity > product.stock) return { ok: false, error: 'stale-cart' };
     resolved.push({ product, quantity: w.quantity });
   }
@@ -90,6 +103,37 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
   const manualCurrency = paymentMethod === 'card' ? 'USD' : market.currency;
   const manualAmount =
     manualCurrency === 'USD' ? grandTotal : toUnits(grandTotal, { currency: manualCurrency, ratePerUsd: market.ratePerUsd });
+
+  const vendorTotals = new Map<string, { sellerId: string; sellerName: string; subaccountId: string | null; gross: number }>();
+  for (const item of resolved) {
+    const seller = item.product.seller;
+    if (!seller) continue;
+    const row = vendorTotals.get(seller.id) ?? {
+      sellerId: seller.id,
+      sellerName: seller.name,
+      subaccountId: seller.subaccountId,
+      gross: 0,
+    };
+    row.gross += item.product.priceCents * item.quantity;
+    vendorTotals.set(seller.id, row);
+  }
+
+  let allocatedRatio = 0;
+  const settlements = [...vendorTotals.values()].map((vendor) => {
+    const discountShare = totals.subtotalCents > 0 ? Math.round((discountCents * vendor.gross) / totals.subtotalCents) : 0;
+    const amountCents = Math.max(0, vendor.gross - discountShare);
+    const wantedRatio = grandTotal > 0 ? (amountCents / grandTotal) * 100 : 0;
+    const ratio = Math.round(Math.min(wantedRatio, Math.max(0, 100 - allocatedRatio)) * 100) / 100;
+    allocatedRatio += ratio;
+    return {
+      sellerId: vendor.sellerId,
+      sellerName: vendor.sellerName,
+      subaccountId: vendor.subaccountId,
+      amountCents,
+      ratio,
+      status: isOnlineMethod(paymentMethod) && vendor.subaccountId ? 'split' : 'pending',
+    };
+  });
 
   for (let attempt = 0; attempt < 6; attempt++) {
     const number = buildOrderNumber(String(randomInt(0, 1_000_000)));
@@ -122,6 +166,8 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           items: {
             create: resolved.map((r) => ({
               productId: r.product.id,
+              sellerId: r.product.sellerId,
+              sellerName: r.product.seller?.name ?? null,
               productName: r.product.name,
               unit: r.product.unit,
               unitPriceCents: r.product.priceCents,
@@ -130,8 +176,14 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
             })),
           },
         },
-        select: { number: true, totalCents: true },
+        select: { id: true, number: true, totalCents: true },
       });
+
+      if (settlements.length) {
+        await tx.vendorSettlement.createMany({
+          data: settlements.map((settlement) => ({ ...settlement, orderId: order.id })),
+        });
+      }
 
       for (const r of resolved) {
         await tx.product.update({

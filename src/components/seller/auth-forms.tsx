@@ -19,7 +19,7 @@ const REGISTER_ERRORS: Record<string, string> = {
   invalid: 'Enter a store name with at least 2 characters.',
   'bad-email': 'Enter a valid email address.',
   'short-password': 'Use at least 8 characters for the password.',
-  exists: 'A seller account with this email already exists. Sign in instead.',
+  exists: 'A vendor account with this email already exists. Sign in instead.',
   'too-many': 'Too many attempts. Try again in 15 minutes.',
   failed: 'Something went wrong. Try again.',
 };
@@ -39,7 +39,7 @@ export function SellerLoginForm() {
     <form action={action} className="space-y-3">
       <div>
         <label className={LABEL} htmlFor="seller-email">
-          Seller email
+          Vendor email
         </label>
         <input id="seller-email" name="email" type="email" required autoComplete="email" className={INPUT} />
       </div>
@@ -51,10 +51,10 @@ export function SellerLoginForm() {
       </div>
       <ErrorNote message={state.error ? LOGIN_ERRORS[state.error] ?? LOGIN_ERRORS.failed : ''} />
       <button type="submit" disabled={pending} className="btn btn-primary h-11 w-full disabled:opacity-60">
-        {pending ? 'Signing in…' : 'Sign in to seller portal'}
+        {pending ? 'Signing in…' : 'Sign in to vendor portal'}
       </button>
       <p className="pt-1 text-center text-sm text-muted">
-        New seller?{' '}
+        New vendor?{' '}
         <Link href="/seller/register" className="font-semibold text-brand hover:underline">
           Create an account
         </Link>
@@ -86,15 +86,21 @@ export function SellerRegisterForm() {
         <input id="seller-phone" name="phone" type="tel" autoComplete="tel" placeholder="+250 7X XXX XXXX" className={INPUT} />
       </div>
       <div>
+        <label className={LABEL} htmlFor="seller-city">
+          City
+        </label>
+        <input id="seller-city" name="city" maxLength={40} autoComplete="address-level2" placeholder="Kigali" className={INPUT} />
+      </div>
+      <div>
         <label className={LABEL} htmlFor="seller-password">
           Password
         </label>
         <input id="seller-password" name="password" type="password" required minLength={8} autoComplete="new-password" className={INPUT} />
-        <p className="mt-1 text-xs text-muted">At least 8 characters. You can publish products right away.</p>
+        <p className="mt-1 text-xs text-muted">At least 8 characters. Your storefront goes live once you activate a plan.</p>
       </div>
       <ErrorNote message={state.error ? REGISTER_ERRORS[state.error] ?? REGISTER_ERRORS.failed : ''} />
       <button type="submit" disabled={pending} className="btn btn-primary h-11 w-full disabled:opacity-60">
-        {pending ? 'Creating account…' : 'Create seller account'}
+        {pending ? 'Creating account…' : 'Create vendor account'}
       </button>
       <p className="pt-1 text-center text-sm text-muted">
         Already selling here?{' '}

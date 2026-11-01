@@ -37,13 +37,13 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
 Leave nothing unset: `DATABASE_URL` must be the real Neon URL, `NEXT_PUBLIC_SITE_URL` must be the public https origin,
-and `AUTH_SECRET` is required for admin, customer and seller login. `ADMIN_EMAIL` / `ADMIN_PASSWORD` are read only when you run
+and `AUTH_SECRET` is required for admin, customer and vendor login. `ADMIN_EMAIL` / `ADMIN_PASSWORD` are read only when you run
 `npm run db:admin`. `SELLER_EMAIL` / `SELLER_PASSWORD` / `SELLER_NAME` are read only when you run `npm run db:seller`.
 `NEXT_PUBLIC_WHATSAPP` (digits only, e.g. `250788123456`) and `NEXT_PUBLIC_SUPPORT_EMAIL` are
 optional; the footer and support page hide those links when the values are empty.
 
-Customer accounts, purchases, deals, rating filters and the six info pages work without extra configuration. Sellers sign
-in at `/seller/login` and can register new seller accounts from `/seller/register`.
+Customer accounts, purchases, deals, rating filters and the six info pages work without extra configuration. Vendors sign
+in at `/seller/login` and can register new vendor accounts from `/seller/register`.
 
 **Never copy `.env.local` from your machine to the server.** Next.js loads `.env.local` in production as well, and its
 local `DATABASE_URL` would override the Neon URL in `.env`, pointing the live site at a missing local database.
@@ -65,7 +65,7 @@ node -v        # expect v22.x
 cd /opt && git clone <your-repo> citymarket && cd citymarket
 cp .env.example .env      # paste the Neon and admin values
 npm ci
-npm run db:init           # creates the tables, loads 19 categories + 163 products, creates admin and seller
+npm run db:init           # creates the tables, loads 19 categories + 163 products, creates admin and vendor
 npm run build
 pm2 start npm --name citymarket -- start
 pm2 save && pm2 startup
@@ -76,15 +76,15 @@ pm2 save && pm2 startup
 client, so local development keeps using `prisma/dev.db`.
 
 When Node cannot be run at all, paste `prisma/neon-schema.sql` and then `prisma/neon-data.sql` into the Neon SQL
-editor. That creates the tables and the catalogue; the admin and seller accounts still come from `npm run db:admin`
+editor. That creates the tables and the catalogue; the admin and vendor accounts still come from `npm run db:admin`
 and `npm run db:seller`.
 
 The dashboard lives at `/admin`. Re-run `npm run db:admin` any time you want to reset the admin password.
 
-The seller portal lives at `/seller`. Re-run `npm run db:seller` after changing `SELLER_PASSWORD` to reset the
-HighQuality Ltd password; it only claims products that have no seller yet, so it never moves another seller's listings.
-New sellers create their own account at `/seller/register` and can publish products immediately. Admin can reassign a
-product to a seller from its edit page under **Products → Seller**.
+The vendor portal lives at `/seller`. Re-run `npm run db:seller` after changing `SELLER_PASSWORD` to reset the
+HighQuality Ltd password; it only claims products that have no vendor yet, so it never moves another vendor's listings.
+New vendors create their own account at `/seller/register` and can publish products immediately. Admin can reassign a
+product to a vendor from its edit page under **Products → Vendor**.
 
 ## 3b. Google sign-in (customers)
 
@@ -163,7 +163,7 @@ A market goes live only when it can actually price and collect:
   shopper for a card number, PIN or CVV.
 
 Values to paste in `/opt/citymarket/.env` (adjust the two rates to the ones you want to bill — leave the bank
-variables empty until the seller's real account is known):
+variables empty until the vendor's real account is known):
 
 ```
 PAY_RWF_PER_USD="1300"
@@ -237,6 +237,60 @@ How ordering stays safe:
 Limits: 12 chat messages per IP per 5 minutes (32 KB body), 6 confirmations per minute (8 KB body), a 45-second upstream
 timeout and 60-second route budget, with up to four tool rounds per reply. Nginx must forward `X-Forwarded-For` (§4) so
 these limits apply per shopper rather than per proxy.
+
+## 3g. Vendors and storefronts
+
+A vendor is a `Seller` row with a public storefront at `/store/<handle>`. The store is live only while the monthly
+subscription is paid (`storefrontUntil` in the future) and the account is not suspended (`suspendedAt` is null).
+Expired, unpaid and suspended vendors keep their portal access but their products disappear from the shop, search,
+chat, meal planner, product pages and sitemap.
+
+- **Billing.** The plan price is `feeRwf` (default RWF 20,000) for `feeDays` (default 30) and is charged through the
+  normal Flutterwave rails: card in USD, MTN MoMo in RWF, Orange/Wave in XOF using `PAY_RWF_PER_USD` and
+  `PAY_XOF_PER_USD`. The conversion is in `src/lib/vendor-billing.ts`. Each attempt creates a `StorefrontInvoice`;
+  the callback and the webhook verify the transaction before extending `storefrontUntil` (a renewal adds days on top).
+- **Subaccounts.** Each vendor enters a Flutterwave subaccount ID (`RS_…`) in **Vendor portal → Storefront settings**.
+  Flutterwave creates these under **Dashboard → Subaccounts**. Checkout sends one `subaccounts[]` entry per vendor in
+  the cart, with `transaction_split_ratio` = that vendor's discounted item value ÷ order total × 100. The delivery fee
+  stays with the platform, and ratios are capped so they never exceed 100.
+- **Payouts.** Online orders paid with a vendor subaccount record a `VendorSettlement` with status `split` — Flutterwave
+  pays the vendor directly at charge time. Cash-on-delivery orders, and vendors without a subaccount, record the same
+  row as `pending`; an administrator marks it paid in **Admin → Vendors → Payouts waiting**, which is the record that
+  the manual transfer left the platform account.
+- **Admin.** **Admin → Vendors** extends the subscription (the **+N days** button grants `feeDays` by default),
+  suspends or restores a store and edits its fee plan. Suspending or expiring a store immediately removes its products
+  from the public catalogue (the cached `catalog` tag is revalidated on every change).
+
+Vendor accounts are created at `/seller/register` (name, city, email, password). The storefront handle is generated
+from the store name and can be edited in **Storefront settings**; it must be unique. New accounts start unpaid, so their
+products stay hidden until the first storefront payment (or an admin extension). The `.env` seed for the platform's own
+vendor is:
+
+```
+SELLER_EMAIL="citymarketshop250@gmail.com"
+SELLER_PASSWORD="<at least 8 characters>"
+SELLER_NAME="HighQuality Ltd"
+SELLER_HANDLE="highquality"
+SELLER_STOREFRONT_DAYS="365"
+SELLER_FEE_RWF="20000"
+```
+
+`npm run db:seller` upserts that account, assigns unowned products to it and activates a 365-day storefront. To adopt
+the feature on an existing database, push the schema and give every existing vendor row a store address (adjust the
+handle list for the account you want to keep):
+
+```bash
+npx prisma db push
+```
+
+```sql
+UPDATE "Seller" SET handle = 'highquality', "storefrontUntil" = NOW() + INTERVAL '365 days' WHERE email = 'citymarketshop250@gmail.com';
+UPDATE "Seller"
+SET handle = lower(regexp_replace(regexp_replace(name, '[^a-zA-Z0-9]+', '-', 'g'), '(^-+|-+$)', '', 'g')) || '-' || left(id, 4)
+WHERE handle IS NULL;
+```
+
+Vendors that should not sell yet keep their handle but no `storefrontUntil`, so all their products stay hidden.
 
 ## 4. Nginx + HTTPS
 

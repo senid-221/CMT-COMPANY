@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 import { prisma } from './db';
 import type { Locale } from './i18n';
+import { activeVendorWhere } from './vendors';
 
 export type ProductRow = {
   handle: string;
@@ -15,6 +16,7 @@ export type ProductRow = {
   stock: number;
   featured: boolean;
   category: { handle: string; name: string; nameFr: string | null };
+  seller?: { handle: string | null; name: string } | null;
   rating?: number;
   ratingCount?: number;
 };
@@ -40,6 +42,7 @@ const productSelect = {
   stock: true,
   featured: true,
   category: { select: { handle: true, name: true, nameFr: true } },
+  seller: { select: { handle: true, name: true } },
 } as const;
 
 export const getCategories = cache(
@@ -99,6 +102,7 @@ async function runProductQuery(q: string, category: string, sort: SortKey, take:
   const postFiltered = minRating > 0 || sort === 'rating';
   const rows = (await prisma.product.findMany({
     where: {
+      ...activeVendorWhere(),
       ...(category ? { category: { handle: category } } : {}),
       ...(q ? { searchName: { contains: q } } : {}),
       ...(deals ? { compareAtCents: { not: null } } : {}),
@@ -140,7 +144,7 @@ export const getFeatured = cache(
   unstable_cache(
     async (): Promise<ProductRow[]> => {
       const rows = (await prisma.product.findMany({
-        where: { featured: true },
+        where: { featured: true, ...activeVendorWhere() },
         orderBy: { name: 'asc' },
         take: 10,
         select: productSelect,
@@ -155,7 +159,7 @@ export const getFeatured = cache(
 const fetchHandles = unstable_cache(
   async (list: string[]): Promise<ProductRow[]> => {
     const found = (await prisma.product.findMany({
-      where: { handle: { in: list } },
+      where: { handle: { in: list }, ...activeVendorWhere() },
       select: productSelect,
     })) as ProductRow[];
     const order = new Map(list.map((handle, index) => [handle, index]));
@@ -173,8 +177,8 @@ export const getProductsByHandles = cache(async (handles: string[]): Promise<Pro
 
 const fetchProduct = unstable_cache(
   async (slug: string): Promise<(ProductRow & { description: string | null; descriptionFr: string | null }) | null> => {
-    const row = (await prisma.product.findUnique({
-      where: { handle: slug },
+    const row = (await prisma.product.findFirst({
+      where: { handle: slug, ...activeVendorWhere() },
       select: { ...productSelect, description: true, descriptionFr: true },
     })) as (ProductRow & { description: string | null; descriptionFr: string | null }) | null;
     if (!row) return null;
@@ -190,7 +194,7 @@ export const getProduct = cache((handle: string) => fetchProduct(handle));
 const fetchRelated = unstable_cache(
   async (slug: string, category: string): Promise<ProductRow[]> => {
     const rows = (await prisma.product.findMany({
-      where: { category: { handle: category }, NOT: { handle: slug } },
+      where: { category: { handle: category }, NOT: { handle: slug }, ...activeVendorWhere() },
       take: 4,
       orderBy: { priceCents: 'asc' },
       select: productSelect,
@@ -206,7 +210,7 @@ export const getRelated = cache((handle: string, categoryHandle: string) => fetc
 const fetchPrices = unstable_cache(
   async (list: string[]) => {
     const rows = await prisma.product.findMany({
-      where: { handle: { in: list } },
+      where: { handle: { in: list }, ...activeVendorWhere() },
       select: productSelect,
     });
     return rows as ProductRow[];
@@ -219,3 +223,12 @@ const fetchPrices = unstable_cache(
 export async function priceProducts(handles: string[]) {
   return fetchPrices([...new Set(handles)].sort());
 }
+
+export const getVendorProducts = cache(async (sellerId: string): Promise<ProductRow[]> => {
+  const rows = (await prisma.product.findMany({
+    where: { sellerId },
+    orderBy: { name: 'asc' },
+    select: productSelect,
+  })) as ProductRow[];
+  return attachRatings(rows);
+});

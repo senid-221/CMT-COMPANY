@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { settlePayment, webhookHashMatches } from '@/lib/payments';
+import { invoiceByReference, settleStorefrontInvoice } from '@/lib/vendor-billing';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,7 +26,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    await settlePayment({ txRef, transactionId });
+    if (await invoiceByReference(txRef)) {
+      await settleStorefrontInvoice({ reference: txRef, transactionId });
+    } else {
+      await settlePayment({ txRef, transactionId });
+    }
   } catch {
     return NextResponse.json({ error: 'verify-failed' }, { status: 502 });
   }

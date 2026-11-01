@@ -16,7 +16,7 @@ export function SellerAuthShell({ title, subtitle, children }: { title: string; 
       </header>
       <main className="mx-auto w-full max-w-md px-4 py-10 sm:py-14">
         <div className="rounded-2xl border border-line bg-canvas p-6 shadow-sm sm:p-8">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-brand">Seller portal</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-brand">Vendor portal</p>
           <h1 className="mt-1 font-display text-2xl font-bold text-ink">{title}</h1>
           <p className="mt-1 text-sm text-muted">{subtitle}</p>
           <div className="mt-6">{children}</div>

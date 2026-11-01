@@ -45,14 +45,26 @@ model Product {
 }
 
 model Seller {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  passwordHash String
-  phone        String?
-  lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  products     Product[]
+  id              String    @id @default(cuid())
+  handle          String?   @unique
+  name            String
+  tagline         String?
+  about           String?
+  logo            String?
+  city            String?
+  email           String    @unique
+  passwordHash    String
+  phone           String?
+  storefrontUntil DateTime?
+  suspendedAt     DateTime?
+  feeRwf          Int       @default(20000)
+  feeDays         Int       @default(30)
+  subaccountId    String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  products        Product[]
+  invoices        StorefrontInvoice[]
+  settlements     VendorSettlement[]
 }
 
 model Order {
@@ -83,6 +95,7 @@ model Order {
   customerId    String?
   placedAt      DateTime    @default(now())
   items         OrderItem[]
+  settlements   VendorSettlement[]
 
   @@index([phone])
   @@index([status])
@@ -107,11 +120,15 @@ model OrderItem {
   orderId      String
   product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   productId    String?
+  sellerId     String?
+  sellerName   String?
   productName  String
   unit         String
   unitPriceCents Int
   quantity     Int
   lineTotalCents Int
+
+  @@index([sellerId])
 }
 
 model SellerApplication {
@@ -190,4 +207,42 @@ model Coupon {
   createdAt          DateTime  @default(now())
 
   @@index([active])
+}
+
+model StorefrontInvoice {
+  id            String   @id @default(cuid())
+  reference     String   @unique
+  seller        Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId      String
+  feeRwf        Int
+  days          Int
+  totalCents    Int
+  currency      String
+  amount        Int
+  status        String   @default("pending")
+  transactionId String?
+  paidAt        DateTime?
+  periodEnd     DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([sellerId, status])
+  @@index([status, createdAt])
+}
+
+model VendorSettlement {
+  id           String   @id @default(cuid())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String
+  seller       Seller   @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  sellerId     String
+  sellerName   String
+  subaccountId String?
+  amountCents  Int
+  ratio        Float
+  status       String   @default("pending")
+  paidAt       DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([sellerId, createdAt])
+  @@index([status, createdAt])
 }

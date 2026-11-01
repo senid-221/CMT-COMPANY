@@ -25,7 +25,7 @@ export async function generateMetadata({
 
   const path = `/category/${category.handle}`;
   const description = clampText(
-    `Shop ${products.length} ${category.name.toLowerCase()} products on CityMarket — everyday essentials from trusted sellers, delivered to your door.`,
+    `Shop ${products.length} ${category.name.toLowerCase()} products on CityMarket — everyday essentials from trusted vendors, delivered to your door.`,
   );
   const filtered = Boolean(query.q || query.sort || query.deals === '1' || query.minRating);
 

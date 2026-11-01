@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 import { prisma } from '@/lib/db';
+import { activeVendorWhere } from '@/lib/vendors';
 
 export type ReviewRow = {
   id: string;
@@ -55,7 +56,7 @@ export async function createReview(input: Partial<ReviewInput>) {
   const parsed = validateReview(input);
   if (!parsed.ok) return parsed;
 
-  const product = await prisma.product.findUnique({ where: { handle: parsed.value.handle }, select: { id: true } });
+  const product = await prisma.product.findFirst({ where: { handle: parsed.value.handle, ...activeVendorWhere() }, select: { id: true } });
   if (!product) return { ok: false as const, error: 'product-not-found' };
 
   await prisma.review.create({

@@ -18,7 +18,7 @@ export const INFO_PAGES: InfoPage[] = [
     path: '/about',
     title: { en: 'About CityMarket', fr: 'À propos de CityMarket' },
     intro: {
-      en: 'CityMarket is a neighbourhood online market: groceries, beauty, drinks, fashion and electronics from trusted sellers, packed with care and delivered to homes and offices across the city.',
+      en: 'CityMarket is a neighbourhood online market: groceries, beauty, drinks, fashion and electronics from trusted vendors, packed with care and delivered to homes and offices across the city.',
       fr: 'CityMarket est un marché en ligne de proximité : courses, beauté, boissons, mode et électronique auprès de vendeurs de confiance, préparés avec soin et livrés aux particuliers et aux bureaux de la ville.',
     },
     sections: [
@@ -41,11 +41,11 @@ export const INFO_PAGES: InfoPage[] = [
         ],
       },
       {
-        heading: { en: 'Built with local sellers', fr: 'Construit avec les vendeurs locaux' },
+        heading: { en: 'Built with local vendors', fr: 'Construit avec les vendeurs locaux' },
         paragraphs: [
           {
-            en: 'Shops, brands and makers can apply to sell on CityMarket. We review each application, help with photos and pricing, and pay sellers every week.',
-            fr: 'Commerces, marques et artisans peuvent demander à vendre sur CityMarket. Nous étudions chaque demande, aidons pour les photos et les prix, et payons les vendeurs chaque semaine.',
+            en: 'Shops, brands and makers open a vendor account and activate a storefront plan. Each store has its own page on CityMarket, and its products also appear across the market with a link back to the store. Online payments are split to the vendor at checkout.',
+            fr: 'Les commerces, marques et artisans ouvrent un compte vendeur et activent une formule boutique. Chaque boutique dispose de sa propre page sur CityMarket, et ses produits apparaissent aussi dans le marché avec un lien vers la boutique. Les paiements en ligne sont répartis au vendeur dès la commande.',
           },
         ],
       },
@@ -253,7 +253,7 @@ export const INFO_PAGES: InfoPage[] = [
     path: '/support',
     title: { en: 'Support', fr: 'Assistance' },
     intro: {
-      en: 'We are here to help with orders, products and seller questions.',
+      en: 'We are here to help with orders, products and vendor questions.',
       fr: 'Nous sommes là pour vous aider sur les commandes, les produits et les questions des vendeurs.',
     },
     sections: [
@@ -276,11 +276,11 @@ export const INFO_PAGES: InfoPage[] = [
         ],
       },
       {
-        heading: { en: 'Sellers', fr: 'Vendeurs' },
+        heading: { en: 'Vendors', fr: 'Vendeurs' },
         paragraphs: [
           {
-            en: 'Selling on CityMarket starts with an application. Our team reviews it within two working days and calls you to finish the setup.',
-            fr: 'Pour vendre sur CityMarket, commencez par une demande. Notre équipe l’étudie sous deux jours ouvrés et vous appelle pour finaliser la mise en place.',
+            en: 'Selling on CityMarket starts with a vendor account and a storefront plan. Register online, publish your products and activate your storefront to appear in the market and on your own store page.',
+            fr: 'Pour vendre sur CityMarket, créez un compte vendeur et souscrivez à une formule boutique. Inscrivez-vous en ligne, publiez vos produits et activez votre boutique pour apparaître dans le marché et sur votre page de boutique.',
           },
         ],
       },

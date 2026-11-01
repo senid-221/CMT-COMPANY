@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/db';
 import { INFO_PAGES } from '@/lib/info';
 import { absoluteUrl } from '@/lib/seo';
+import { activeVendorWhere } from '@/lib/vendors';
 
 // Sellers publish between deploys, so regenerate hourly instead of freezing the list at build time.
 export const revalidate = 3600;
@@ -30,15 +31,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   try {
-    const [categories, products] = await Promise.all([
+    const [categories, products, vendors] = await Promise.all([
       prisma.category.findMany({
         where: { products: { some: {} } },
         select: { handle: true },
         orderBy: { sort: 'asc' },
       }),
       prisma.product.findMany({
+        where: activeVendorWhere(),
         select: { handle: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
+      }),
+      prisma.seller.findMany({
+        where: { handle: { not: null }, suspendedAt: null, storefrontUntil: { gt: new Date() } },
+        select: { handle: true },
+        orderBy: { name: 'asc' },
       }),
     ]);
 
@@ -48,6 +55,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
         changeFrequency: 'weekly' as const,
       })),
+      ...vendors.flatMap((vendor) =>
+        vendor.handle
+          ? [
+              {
+                url: absoluteUrl(`/store/${vendor.handle}`),
+                priority: 0.7,
+                changeFrequency: 'weekly' as const,
+              },
+            ]
+          : [],
+      ),
       ...products.map((product) => ({
         url: absoluteUrl(`/product/${product.handle}`),
         lastModified: product.createdAt,

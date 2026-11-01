@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { activeVendorWhere } from '@/lib/vendors';
 import type { Locale } from '@/lib/i18n';
 import type { Market } from '@/lib/markets';
 
@@ -126,7 +127,7 @@ export function parseMealPlanInput(raw: unknown, market: Market): MealPlanInput 
 
 async function groceryCatalogue() {
   return prisma.product.findMany({
-    where: { category: { handle: { in: MEAL_CATEGORIES } }, stock: { gt: 0 } },
+    where: { category: { handle: { in: MEAL_CATEGORIES } }, stock: { gt: 0 }, ...activeVendorWhere() },
     select: {
       handle: true,
       name: true,

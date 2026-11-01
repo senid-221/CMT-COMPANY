@@ -41,6 +41,14 @@ export function ProductCard({ product, locale, market }: { product: ProductRow; 
               <span className="text-amber">★</span> {product.rating.toFixed(1)} ({product.ratingCount}) ·{' '}
             </>
           ) : null}
+          {product.seller?.handle ? (
+            <>
+              <Link href={`/store/${product.seller.handle}`} className="font-semibold text-brand/90 hover:underline">
+                {product.seller.name}
+              </Link>{' '}
+              ·{' '}
+            </>
+          ) : null}
           {product.unit}
         </p>
         <div className="mt-auto flex h-[52px] items-center justify-between gap-1.5">

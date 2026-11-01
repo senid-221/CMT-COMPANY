@@ -8,6 +8,10 @@ import { endSellerSession, requireSeller, startSellerSession } from '@/lib/selle
 import { hashPassword, verifyPassword } from '@/lib/password';
 import { clientIpFromHeaders, rateLimited } from '@/lib/rate-limit';
 import { parseMoney } from '@/lib/money';
+import { isOnlineMethod } from '@/lib/payment-methods';
+import { publicOrigin } from '@/lib/origin';
+import { storefrontCallbackUrl, startStorefrontPayment } from '@/lib/vendor-billing';
+import { uniqueVendorHandle, validSubaccountId, vendorSlug } from '@/lib/vendors';
 
 export type SellerAuthState = { error: 'invalid' | 'exists' | 'bad-email' | 'short-password' | 'too-many' | 'failed' | null };
 
@@ -54,6 +58,7 @@ export async function registerSeller(_prev: SellerAuthState, formData: FormData)
   const name = str(formData.get('name'), 80);
   const email = String(formData.get('email') ?? '').trim().toLowerCase().slice(0, 120);
   const phone = str(formData.get('phone'), 30) || null;
+  const city = str(formData.get('city'), 40) || null;
   const password = String(formData.get('password') ?? '');
   const ip = clientIpFromHeaders(await headers());
 
@@ -65,12 +70,68 @@ export async function registerSeller(_prev: SellerAuthState, formData: FormData)
   const existing = await prisma.seller.findUnique({ where: { email }, select: { id: true } });
   if (existing) return { error: 'exists' };
 
+  const handle = await uniqueVendorHandle(name);
   const seller = await prisma.seller.create({
-    data: { name, email, phone, passwordHash: hashPassword(password) },
+    data: { name, email, phone, city, handle, passwordHash: hashPassword(password) },
     select: { id: true },
   });
   await startSellerSession(seller.id);
-  redirect('/seller');
+  redirect('/seller?welcome=1');
+}
+
+export async function saveVendorProfile(formData: FormData) {
+  const seller = await requireSeller();
+  const name = str(formData.get('name'), 80);
+  const tagline = str(formData.get('tagline'), 120) || null;
+  const about = text(formData.get('about'), 1_000) || null;
+  const logo = text(formData.get('logo'), 300) || null;
+  const city = str(formData.get('city'), 40) || null;
+  const phone = str(formData.get('phone'), 30) || null;
+  const handle = vendorSlug(str(formData.get('handle'), 60));
+  const subaccountId = str(formData.get('subaccountId'), 60) || null;
+
+  if (name.length < 2 || handle.length < 2) redirect('/seller/settings?error=invalid');
+  if (logo && (!(logo.startsWith('/') || logo.startsWith('https://')) || logo.startsWith('//'))) {
+    redirect('/seller/settings?error=invalid');
+  }
+  if (subaccountId && !validSubaccountId(subaccountId)) redirect('/seller/settings?error=subaccount');
+
+  const clash = await prisma.seller.findFirst({ where: { handle, NOT: { id: seller.id } }, select: { id: true } });
+  if (clash) redirect('/seller/settings?error=handle');
+
+  await prisma.seller.update({
+    where: { id: seller.id },
+    data: { name, tagline, about, logo, city, phone, handle, subaccountId },
+  });
+
+  revalidateTag('catalog');
+  revalidatePath('/seller');
+  revalidatePath('/seller/settings');
+  revalidatePath('/store/[handle]', 'page');
+  redirect('/seller/settings?saved=1');
+}
+
+export async function startStorefrontBilling(formData: FormData) {
+  const seller = await requireSeller();
+  const method = String(formData.get('method') ?? '');
+  if (!isOnlineMethod(method)) redirect('/seller/billing?error=method');
+
+  const sent = await headers();
+  const origin = publicOrigin(`${sent.get('x-forwarded-proto') ?? 'https'}://${sent.get('host') ?? 'localhost'}`);
+
+  let link = '';
+  try {
+    const result = await startStorefrontPayment({
+      sellerId: seller.id,
+      method,
+      redirectUrl: storefrontCallbackUrl(origin),
+    });
+    link = result.link;
+  } catch (error) {
+    const code = error instanceof Error && error.message === 'payment-not-configured' ? 'unavailable' : 'gateway';
+    redirect(`/seller/billing?error=${code}`);
+  }
+  redirect(link);
 }
 
 export async function logoutSeller() {

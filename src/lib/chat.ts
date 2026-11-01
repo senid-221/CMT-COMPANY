@@ -10,6 +10,7 @@ import { methodAvailable } from '@/lib/payments';
 import { isOnlineMethod, isPaymentMethod, type PaymentMethod } from '@/lib/payment-methods';
 import { ratePerUsd } from '@/lib/market';
 import { findOrder, findOrdersByPhone, findOrdersForCustomer, validate } from '@/lib/orders';
+import { activeVendorWhere } from '@/lib/vendors';
 import { chatOrdersEnabled, draftExpiry, newDraftNonce, signDraft } from '@/lib/chat-draft';
 import type { Customer } from '@/lib/customer/auth';
 import type { Locale } from '@/lib/i18n';
@@ -539,6 +540,7 @@ async function searchProducts(args: Record<string, unknown>, ctx: ChatContext): 
   const rows = await prisma.product.findMany({
     where: {
       stock: { gt: 0 },
+      ...activeVendorWhere(),
       ...(askedCategory ? { category: { handle: askedCategory } } : {}),
       ...(expanded.terms.length ? { OR: expanded.terms.map((term) => ({ searchName: { contains: term } })) } : {}),
       ...priceFilter,
@@ -574,7 +576,7 @@ async function searchProducts(args: Record<string, unknown>, ctx: ChatContext): 
   let fallbackCategory: string | null = null;
   if (!ranked.length && query && askedCategory) {
     const alternatives = await prisma.product.findMany({
-      where: { stock: { gt: 0 }, category: { handle: askedCategory }, ...priceFilter },
+      where: { stock: { gt: 0 }, category: { handle: askedCategory }, ...priceFilter, ...activeVendorWhere() },
       select: SEARCH_SELECT,
       orderBy: [{ featured: 'desc' }, { name: 'asc' }],
       take: limit,
@@ -661,7 +663,7 @@ function cleanCartItems(value: unknown, max = 10): ChatCartOp[] {
 async function cartSummary(lines: { handle: string; qty: number }[]): Promise<ChatCart> {
   if (!lines.length) return { lines: [], subtotalCents: 0, itemCount: 0 };
   const rows = await prisma.product.findMany({
-    where: { handle: { in: lines.map((line) => line.handle) } },
+    where: { handle: { in: lines.map((line) => line.handle) }, ...activeVendorWhere() },
     select: { handle: true, name: true, nameFr: true, unit: true, image: true, priceCents: true },
   });
   const byHandle = new Map(rows.map((row) => [row.handle, row]));
@@ -712,7 +714,7 @@ async function addToCart(args: Record<string, unknown>, ctx: ChatContext): Promi
   }
 
   const rows = await prisma.product.findMany({
-    where: { handle: { in: wanted.map((item) => item.handle) } },
+    where: { handle: { in: wanted.map((item) => item.handle) }, ...activeVendorWhere() },
     select: { handle: true, name: true, stock: true },
   });
   const byHandle = new Map(rows.map((row) => [row.handle, row]));
@@ -776,7 +778,7 @@ async function updateCart(args: Record<string, unknown>, ctx: ChatContext): Prom
   }
 
   const rows = await prisma.product.findMany({
-    where: { handle: { in: wanted.map((item) => item.handle) } },
+    where: { handle: { in: wanted.map((item) => item.handle) }, ...activeVendorWhere() },
     select: { handle: true, name: true, stock: true },
   });
   const byHandle = new Map(rows.map((row) => [row.handle, row]));
@@ -1178,7 +1180,7 @@ async function prepareOrder(args: Record<string, unknown>, ctx: ChatContext): Pr
   }
 
   const products = await prisma.product.findMany({
-    where: { handle: { in: wanted.map((line) => line.handle) } },
+    where: { handle: { in: wanted.map((line) => line.handle) }, ...activeVendorWhere() },
     select: {
       handle: true,
       name: true,
@@ -1354,7 +1356,7 @@ async function cartLinesForPrompt(ctx: ChatContext) {
     .slice(0, 30);
   if (!wanted.length) return { lines: [] as string[], subtotalCents: 0 };
   const rows = await prisma.product.findMany({
-    where: { handle: { in: wanted.map((line) => line.handle) } },
+    where: { handle: { in: wanted.map((line) => line.handle) }, ...activeVendorWhere() },
     select: { handle: true, name: true, priceCents: true, stock: true },
   });
   const byHandle = new Map(rows.map((row) => [row.handle, row]));
@@ -1390,7 +1392,7 @@ async function buildSystemPrompt(ctx: ChatContext) {
   }).format(new Date());
 
   return [
-    'You are Luna, CityMarket’s own live shop assistant. You speak for the store and its sellers in the first person: "we", "our shop", "I can help with that". You are warm, human and concise, never robotic.',
+    'You are Luna, CityMarket’s own live shop assistant. You speak for the store and its vendors in the first person: "we", "our shop", "I can help with that". You are warm, human and concise, never robotic.',
     `Store: CityMarket, an online grocery and general store. Now: ${today} (Africa/Kigali). Market: ${ctx.market.names.en} (${ctx.market.code}), currency ${ctx.market.currency}.`,
     `Shopper: ${customer} Current page: ${ctx.page || '/'}.`,
     `Delivery: free over ${freeFrom}. Slots and fees:\n${slots}`,

@@ -7,17 +7,17 @@ import { StoreIcon } from '@/components/icons';
 import { OG_IMAGE } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Become a Seller',
-  description: 'Sell groceries, fashion, drinks, electronics and more on CityMarket. Apply online, get help with photos and pricing, and get paid every week.',
+  title: 'Become a Vendor',
+  description: 'Open a CityMarket vendor account, activate your storefront and sell groceries, fashion, drinks, electronics and more. Your products appear on CityMarket and link to your own store.',
   alternates: { canonical: '/sell' },
   openGraph: {
     type: 'website',
     siteName: 'CityMarket',
     url: '/sell',
-    title: 'Become a Seller',
+    title: 'Become a Vendor',
     images: [OG_IMAGE],
   },
-  twitter: { card: 'summary_large_image', title: 'Become a Seller', images: [OG_IMAGE.url] },
+  twitter: { card: 'summary_large_image', title: 'Become a Vendor', images: [OG_IMAGE.url] },
 };
 
 export default async function SellPage() {

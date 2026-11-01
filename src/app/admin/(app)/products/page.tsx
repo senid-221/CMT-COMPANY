@@ -62,7 +62,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
             <tr>
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Seller</th>
+              <th className="px-4 py-3">Vendor</th>
               <th className="px-4 py-3 text-right">Price</th>
               <th className="px-4 py-3 text-right">Stock</th>
               <th className="px-4 py-3">Featured</th>

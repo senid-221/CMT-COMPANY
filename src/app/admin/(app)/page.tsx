@@ -24,7 +24,7 @@ export default async function AdminOverviewPage() {
     { label: 'Products', value: String(products), hint: `${lowStock} at or below 10 units`, href: '/admin/products' },
     { label: 'Visitors (7 days)', value: String(visitors.totals.visitors), hint: `${visitors.totals.views} page views`, href: '/admin/visitors' },
     { label: 'Reviews to moderate', value: String(pendingReviews), hint: 'Waiting for approval', href: '/admin/reviews' },
-    { label: 'Seller applications', value: String(newSellers), hint: 'Waiting for review', href: '/admin/sellers' },
+    { label: 'Vendor applications', value: String(newSellers), hint: 'Waiting for review', href: '/admin/sellers' },
   ];
 
   return (

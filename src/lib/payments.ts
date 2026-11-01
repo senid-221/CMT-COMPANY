@@ -91,25 +91,33 @@ export function webhookHashMatches(header: string | null) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export async function initiatePayment(input: {
-  orderNumber: string;
+export type SplitAccount = { id: string; ratio: number };
+
+export type PaymentLinkInput = {
+  txRef: string;
   method: OnlinePaymentMethod;
   totalCents: number;
   customerName: string;
   email: string | null;
   phone: string;
   redirectUrl: string;
-}) {
+  title?: string;
+  description?: string;
+  meta?: Record<string, string>;
+  subaccounts?: SplitAccount[];
+};
+
+/** One hosted-checkout request; orders and storefront invoices share it. */
+export async function requestPaymentLink(input: PaymentLinkInput) {
   const key = secretKey();
   if (!key) throw new Error('payment-not-configured');
 
   const charge = chargeFor(input.method, input.totalCents);
-  const txRef = newPaymentRef(input.orderNumber);
   const response = await fetch(`${apiBase()}/v3/payments`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      tx_ref: txRef,
+      tx_ref: input.txRef,
       amount: apiAmount(charge),
       currency: charge.currency,
       redirect_url: input.redirectUrl,
@@ -119,8 +127,16 @@ export async function initiatePayment(input: {
         name: input.customerName,
         phonenumber: input.phone,
       },
-      customizations: { title: 'CityMarket', description: `Order ${input.orderNumber}` },
-      meta: { order: input.orderNumber, method: input.method },
+      customizations: { title: input.title ?? 'CityMarket', description: input.description ?? `Order ${input.txRef}` },
+      meta: input.meta ?? {},
+      ...(input.subaccounts?.length
+        ? {
+            subaccounts: input.subaccounts.map((account) => ({
+              id: account.id,
+              transaction_split_ratio: account.ratio,
+            })),
+          }
+        : {}),
     }),
     cache: 'no-store',
     signal: AbortSignal.timeout(15_000),
@@ -132,7 +148,33 @@ export async function initiatePayment(input: {
     throw new Error('payment-init-failed');
   }
 
-  return { link, txRef, charge };
+  return { link, charge };
+}
+
+export async function initiatePayment(input: {
+  orderNumber: string;
+  method: OnlinePaymentMethod;
+  totalCents: number;
+  customerName: string;
+  email: string | null;
+  phone: string;
+  redirectUrl: string;
+  subaccounts?: SplitAccount[];
+}) {
+  const txRef = newPaymentRef(input.orderNumber);
+  const result = await requestPaymentLink({
+    txRef,
+    method: input.method,
+    totalCents: input.totalCents,
+    customerName: input.customerName,
+    email: input.email,
+    phone: input.phone,
+    redirectUrl: input.redirectUrl,
+    description: `Order ${input.orderNumber}`,
+    meta: { order: input.orderNumber, method: input.method },
+    subaccounts: input.subaccounts,
+  });
+  return { ...result, txRef };
 }
 
 export async function startOrderPayment(order: {
@@ -151,6 +193,22 @@ export async function startOrderPayment(order: {
   if (order.status === 'cancelled') throw new Error('cancelled');
   if (!methodAvailable(order.paymentMethod)) throw new Error('payment-not-configured');
 
+  const settlements = await prisma.vendorSettlement.findMany({
+    where: { order: { number: order.number }, subaccountId: { not: null }, ratio: { gt: 0 } },
+    select: { subaccountId: true, ratio: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  let allocated = 0;
+  const subaccounts: SplitAccount[] = [];
+  for (const row of settlements) {
+    if (!row.subaccountId) continue;
+    const ratio = Math.round(Math.min(row.ratio, Math.max(0, 100 - allocated)) * 100) / 100;
+    if (ratio <= 0) continue;
+    allocated += ratio;
+    subaccounts.push({ id: row.subaccountId, ratio });
+  }
+
   const result = await initiatePayment({
     orderNumber: order.number,
     method: order.paymentMethod,
@@ -159,6 +217,7 @@ export async function startOrderPayment(order: {
     email: order.email,
     phone: order.phone,
     redirectUrl: order.redirectUrl,
+    subaccounts,
   });
 
   await prisma.order.update({

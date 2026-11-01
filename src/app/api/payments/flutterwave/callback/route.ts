@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { markPaymentFailed, paymentOrderNumber, settlePayment } from '@/lib/payments';
+import { invoiceByReference, markStorefrontInvoiceFailed, settleStorefrontInvoice } from '@/lib/vendor-billing';
 import { publicOrigin } from '@/lib/origin';
 
 export const runtime = 'nodejs';
@@ -16,6 +17,19 @@ export async function GET(request: Request) {
   const transactionId = (params.get('transaction_id') ?? '').trim();
 
   if (!txRef) return back(request, '/');
+
+  if (await invoiceByReference(txRef)) {
+    if (status !== 'successful' || !transactionId) {
+      await markStorefrontInvoiceFailed(txRef);
+      return back(request, '/seller/billing?failed=1');
+    }
+    try {
+      const result = await settleStorefrontInvoice({ reference: txRef, transactionId });
+      return back(request, `/seller/billing?${result.state === 'paid' ? 'paid=1' : 'failed=1'}`);
+    } catch {
+      return back(request, '/seller/billing?failed=1');
+    }
+  }
 
   if (status !== 'successful' || !transactionId) {
     const number = await markPaymentFailed(txRef);

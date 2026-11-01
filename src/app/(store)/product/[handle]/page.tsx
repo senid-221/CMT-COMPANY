@@ -70,7 +70,10 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
       price: schemaPrice,
       availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       itemCondition: 'https://schema.org/NewCondition',
-      seller: { '@type': 'Organization', name: 'CityMarket' },
+      seller:
+        product.seller?.handle
+          ? { '@type': 'Organization', name: product.seller.name, url: absoluteUrl(`/store/${product.seller.handle}`) }
+          : { '@type': 'Organization', name: 'CityMarket' },
     },
     ...(summary.count
       ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: summary.average, reviewCount: summary.count } }
@@ -104,6 +107,14 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
             <p className="mt-1 text-sm text-muted">
               {t(locale, 'product.unit')}: {product.unit}
             </p>
+            {product.seller?.handle ? (
+              <Link
+                href={`/store/${product.seller.handle}`}
+                className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
+              >
+                {t(locale, 'store.soldBy', { name: product.seller.name })}
+              </Link>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap items-baseline gap-3">
@@ -124,11 +135,16 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
             {lowStock ? t(locale, 'product.lowStock', { n: product.stock }) : t(locale, 'product.stock')}
           </p>
 
-          <div className="flex items-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center gap-4 pt-2">
             <AddToCart handle={product.handle} locale={locale} image={product.image} />
             <Link href="/cart" className="text-sm font-semibold text-brand hover:underline">
               {t(locale, 'nav.cart')} →
             </Link>
+            {product.seller?.handle ? (
+              <Link href={`/store/${product.seller.handle}`} className="btn btn-ghost text-sm">
+                {t(locale, 'store.visit')}
+              </Link>
+            ) : null}
           </div>
         </div>
       </div>

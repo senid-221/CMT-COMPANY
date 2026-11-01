@@ -3,13 +3,13 @@ import { getSeller } from '@/lib/seller/auth';
 import { SellerAuthShell } from '@/components/seller/auth-shell';
 import { SellerLoginForm } from '@/components/seller/auth-forms';
 
-export const metadata = { title: 'Seller sign in', robots: { index: false, follow: false } };
+export const metadata = { title: 'Vendor sign in', robots: { index: false, follow: false } };
 
 export default async function SellerLoginPage() {
   if (await getSeller()) redirect('/seller');
 
   return (
-    <SellerAuthShell title="Seller sign in" subtitle="Manage your listings and publish new products.">
+    <SellerAuthShell title="Vendor sign in" subtitle="Manage your products, storefront and payouts.">
       <SellerLoginForm />
     </SellerAuthShell>
   );

@@ -74,7 +74,7 @@ export function ProductForm({
         </div>
         <div>
           <label className="label" htmlFor="sellerId">
-            Seller
+            Vendor
           </label>
           <select id="sellerId" name="sellerId" defaultValue={product?.sellerId ?? ''} className="field">
             <option value="">Unassigned</option>

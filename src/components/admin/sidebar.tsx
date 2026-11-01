@@ -18,7 +18,7 @@ export function AdminSidebar({ admin, counts }: Props) {
     { href: '/admin/orders', label: 'Orders', icon: CalendarIcon, badge: counts.orders },
     { href: '/admin/products', label: 'Products', icon: BoxIcon, badge: 0 },
     { href: '/admin/coupons', label: 'Coupons', icon: TicketIcon, badge: 0 },
-    { href: '/admin/sellers', label: 'Sellers', icon: UsersIcon, badge: counts.sellers },
+    { href: '/admin/sellers', label: 'Vendors', icon: UsersIcon, badge: counts.sellers },
     { href: '/admin/reviews', label: 'Reviews', icon: StarIcon, badge: counts.reviews },
     { href: '/admin/content', label: 'Website content', icon: LayoutIcon, badge: 0 },
     { href: '/admin/visitors', label: 'Visitors', icon: ChartIcon, badge: 0 },

@@ -10,6 +10,7 @@ import { clientIpFromHeaders, rateLimited } from '@/lib/rate-limit';
 import { normalizeContent, saveContent, type SiteContent } from '@/lib/content';
 import { parseMoney } from '@/lib/money';
 import { ORDER_STATUSES } from '@/lib/pricing';
+import { nextStorefrontEnd } from '@/lib/vendors';
 
 export type LoginState = { error: 'invalid' | 'too-many' | null };
 
@@ -252,4 +253,50 @@ export async function saveSiteContent(formData: FormData) {
   await saveContent(content);
   revalidatePath('/', 'layout');
   redirect('/admin/content?saved=1');
+}
+
+export async function updateVendorStorefront(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  const action = String(formData.get('action') ?? '');
+  const seller = id
+    ? await prisma.seller.findUnique({ where: { id }, select: { id: true, feeDays: true, storefrontUntil: true } })
+    : null;
+  if (!seller) redirect('/admin/sellers?error=invalid');
+
+  if (action === 'extend') {
+    const days = Math.max(1, Math.min(365, Math.round(Number(formData.get('days') ?? seller.feeDays) || seller.feeDays)));
+    const storefrontUntil = nextStorefrontEnd(seller.storefrontUntil, days);
+    await prisma.seller.update({ where: { id: seller.id }, data: { storefrontUntil } });
+  } else if (action === 'suspend') {
+    await prisma.seller.update({ where: { id: seller.id }, data: { suspendedAt: new Date() } });
+  } else if (action === 'resume') {
+    await prisma.seller.update({ where: { id: seller.id }, data: { suspendedAt: null } });
+  } else if (action === 'fee') {
+    const feeRwf = Math.round(Number(formData.get('feeRwf') ?? 0));
+    const feeDays = Math.round(Number(formData.get('feeDays') ?? 30));
+    if (!Number.isFinite(feeRwf) || feeRwf < 1_000 || feeRwf > 10_000_000 || !Number.isFinite(feeDays) || feeDays < 1 || feeDays > 365) {
+      redirect('/admin/sellers?error=invalid');
+    }
+    await prisma.seller.update({ where: { id: seller.id }, data: { feeRwf, feeDays } });
+  } else {
+    redirect('/admin/sellers?error=invalid');
+  }
+
+  revalidateTag('catalog');
+  revalidatePath('/admin/sellers');
+  revalidatePath('/store/[handle]', 'page');
+  redirect('/admin/sellers?saved=1');
+}
+
+export async function markVendorSettlementPaid(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) redirect('/admin/sellers?error=invalid');
+  await prisma.vendorSettlement.updateMany({
+    where: { id, status: { not: 'paid' } },
+    data: { status: 'paid', paidAt: new Date() },
+  });
+  revalidatePath('/admin/sellers');
+  redirect('/admin/sellers?saved=1');
 }
