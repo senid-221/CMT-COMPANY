@@ -85,7 +85,7 @@ export default async function HomePage() {
     <div className="shell space-y-10 py-8">
       <JsonLd data={websiteJsonLd()} />
       <JsonLd data={organizationJsonLd()} />
-      <h1 className="sr-only">CityMarket — groceries, beauty, drinks, fashion and electronics delivered</h1>
+      <h1 className="sr-only">CityMarket — Everyday Essentials Delivered</h1>
       <HeroSlider
         slides={slides}
         labels={slides.map((_, i) => t(locale, 'rail.slide', { n: i + 1, total: slides.length }))}

@@ -19,7 +19,7 @@ const jamjuree = Bai_Jamjuree({
   display: 'swap',
 });
 
-const TITLE = 'CityMarket — everyday essentials delivered';
+const TITLE = 'CityMarket — Everyday Essentials Delivered';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

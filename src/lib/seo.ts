@@ -17,7 +17,7 @@ export const OG_IMAGE = {
   url: '/opengraph-image',
   width: 1200,
   height: 630,
-  alt: 'CityMarket — everyday essentials delivered',
+  alt: 'CityMarket — Everyday Essentials Delivered',
 };
 
 /** Meta descriptions are cut around 160 characters; never split a word in half. */
@@ -48,6 +48,7 @@ export function organizationJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': absoluteUrl('/#organization'),
     name: SITE_NAME,
     url: absoluteUrl('/'),
     logo: absoluteUrl('/logo.svg'),
@@ -59,9 +60,11 @@ export function websiteJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': absoluteUrl('/#website'),
     name: SITE_NAME,
     url: absoluteUrl('/'),
     description: SITE_DESCRIPTION,
+    publisher: { '@id': absoluteUrl('/#organization') },
     potentialAction: {
       '@type': 'SearchAction',
       target: { '@type': 'EntryPoint', urlTemplate: `${absoluteUrl('/shop')}?q={search_term_string}` },
