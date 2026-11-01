@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { headers } from 'next/headers';
 import { clientIpFromHeaders, rateLimited } from '@/lib/rate-limit';
+import { publicOrigin } from '@/lib/origin';
 import { startCustomerSession } from '@/lib/customer/auth';
 import { linkGoogleCustomer } from '@/lib/customer/google-account';
 import { claimGuestOrders } from '@/lib/customer/orders';
@@ -16,7 +17,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 function finish(request: NextRequest, path: string, clearState = false) {
-  const response = NextResponse.redirect(new URL(path, request.url));
+  const response = NextResponse.redirect(new URL(path, publicOrigin(request.url)));
   if (clearState) response.cookies.set(GOOGLE_STATE_COOKIE, '', { ...googleStateCookieOptions(), maxAge: 0 });
   return response;
 }

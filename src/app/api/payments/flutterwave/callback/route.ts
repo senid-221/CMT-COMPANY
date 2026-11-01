@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { markPaymentFailed, paymentOrderNumber, settlePayment } from '@/lib/payments';
+import { publicOrigin } from '@/lib/origin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function back(request: Request, path: string) {
-  return NextResponse.redirect(new URL(path, request.url));
+  return NextResponse.redirect(new URL(path, publicOrigin(request.url)));
 }
 
 export async function GET(request: Request) {

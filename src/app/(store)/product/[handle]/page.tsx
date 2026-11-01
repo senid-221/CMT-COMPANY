@@ -17,7 +17,7 @@ import { ReviewForm } from '@/components/review-form';
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params;
   const [product, market] = await Promise.all([getProduct(handle), getMarket()]);
-  if (!product) return { title: 'Product not found', robots: { index: false } };
+  if (!product) return { title: 'Product not found' };
   const path = `/product/${product.handle}`;
   const description = clampText(
     product.description?.trim() ||
