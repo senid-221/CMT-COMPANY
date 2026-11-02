@@ -82,7 +82,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             </div>
           </form>
 
-          <nav className="order-4 flex w-full items-center justify-end gap-1 md:order-3 md:w-auto">
+          <nav className="order-4 grid w-full grid-cols-6 items-center justify-items-center md:order-3 md:flex md:w-auto md:justify-end md:gap-1">
             <MarketSwitch locale={locale} market={market} options={availableMarkets()} />
             <Link href="/notifications" aria-label={t(locale, 'nav.notifications')} className={ICON_LINK}>
               <BellIcon size={26} />
