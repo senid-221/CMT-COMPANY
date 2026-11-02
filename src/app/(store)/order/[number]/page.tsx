@@ -4,13 +4,14 @@ import { getLocale } from '@/lib/locale';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney, formatUnits } from '@/lib/money';
 import { findOrder } from '@/lib/orders';
-import { bankDetails, getMarket, isCurrency } from '@/lib/market';
+import { bankDetails, getMarket, isCurrency, resolveMarket } from '@/lib/market';
+import { offeredRails } from '@/lib/markets';
 import { Logo } from '@/components/logo';
 import { slotKey, statusKey, paymentMethodKey, paymentStatusKey } from '@/lib/order-labels';
 import { isPaymentMethod, isOnlineMethod, paymentStatusValue, type PaymentStatus } from '@/lib/payment-methods';
-import { methodAvailable } from '@/lib/payments';
+import { methodAvailable, paymentConfig } from '@/lib/payments';
 import { ORDER_STATUSES, type OrderStatus } from '@/lib/pricing';
-import { PayNow } from '@/components/order-pay-now';
+import { PayNow, PaymentWatch } from '@/components/order-pay-now';
 
 const PAY_PILL: Record<PaymentStatus, string> = {
   paid: 'bg-success/10 text-success',
@@ -63,7 +64,9 @@ export default async function OrderPage({
     order.paymentAmount && isCurrency(order.paymentCurrency)
       ? formatUnits(order.paymentAmount, locale, order.paymentCurrency)
       : formatMoney(order.totalCents, locale, market);
-  const canRetry = online && !paid && order.status !== 'cancelled' && methodAvailable(paymentMethod);
+  // A cash order is not stuck: the shopper can still move it onto a live rail for the country it was placed in.
+  const payRails = online ? [] : offeredRails(resolveMarket(order.market).methods, paymentConfig().rails).filter(isOnlineMethod);
+  const canRetry = !paid && order.status !== 'cancelled' && (online ? methodAvailable(paymentMethod) : payRails.length > 0);
 
   return (
     <div className="shell max-w-3xl py-8">
@@ -169,8 +172,11 @@ export default async function OrderPage({
           ) : null}
           {canRetry ? (
             <div className="mt-3">
-              <PayNow locale={locale} number={order.number} phone={order.phone} />
+              <PayNow locale={locale} number={order.number} phone={order.phone} rails={payRails} />
             </div>
+          ) : null}
+          {online && !paid && order.status !== 'cancelled' ? (
+            <PaymentWatch locale={locale} number={order.number} phone={order.phone} />
           ) : null}
           {online && !paid && !methodAvailable(paymentMethod) ? <p className="mt-2 text-xs text-muted">{t(locale, 'checkout.onlineUnavailable')}</p> : null}
         </div>

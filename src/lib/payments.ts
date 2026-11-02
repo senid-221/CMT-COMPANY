@@ -287,8 +287,10 @@ export async function paymentOrderNumber(txRef: string) {
 export async function markPaymentFailed(txRef: string) {
   const order = await orderForRef(txRef);
   if (!order) return null;
+  // Only the attempt still on file may fail: abandoning an old link must not mark a fresh,
+  // in-flight attempt as failed.
   await prisma.order.updateMany({
-    where: { id: order.id, paymentStatus: 'pending' },
+    where: { id: order.id, paymentStatus: 'pending', paymentRef: txRef },
     data: { paymentStatus: 'failed' },
   });
   return order.number;

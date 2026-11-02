@@ -125,7 +125,25 @@ exact local amount before the customer leaves the site.
 Redirect URL used by the gateway: `https://<your-domain>/api/payments/flutterwave/callback`, built from
 `NEXT_PUBLIC_SITE_URL`. Every payment is verified server-to-server against the Flutterwave transaction API before an
 order is marked paid — both on the browser redirect and on the webhook — and the amount, currency and order reference
-must match the stored order. A failed or cancelled payment keeps the order and offers **Pay now** on the order page.
+must match the stored order.
+
+Rules the server enforces (checkout mirrors them, but the filter in the UI is a convenience, not the rule):
+
+- **Each payment attempt has its own reference** (`CMB-<number>-<10 hex>`). Abandoning an old gateway link cannot fail
+  a newer attempt: only the reference still stored on the order may move it to `failed`. Retrying opens a fresh link.
+- **Mobile money needs a wallet the network can prompt.** The delivery phone is normalized to E.164 against the
+  market prefix (`0788 123 456` → `+250788123456` in Rwanda), and `mtn` / `orange` / `wave` orders are rejected with
+  `invalid:phoneLocal` when the number cannot belong to that country's wallet. Card and cash accept any valid number.
+- **A cash, bank or failed order is not stuck.** The order page lists one **Pay now** button per online rail that the
+  order's own market and the gateway both support; choosing one rewrites the order's method, opens the secure page for
+  the amount shown, and moves that vendor's `pending` settlements to `split` (see §3g). A rail from another market is
+  refused with `method-unavailable`; picking none returns `need-method`; a paid order returns `already-paid`.
+- **The order page settles itself.** While an online payment is `pending`, the page polls
+  `GET /api/orders/status?number=…&phone=…` every 4 s (max 45 tries, 60 req/min per IP) and flips to **Paid** without a
+  reload. The endpoint answers only when the order number and phone match, and returns just
+  `{ status, paymentMethod, paymentStatus }` — no address or item data.
+- Checkout remembers the rail a shopper last used per market (`localStorage` key `cmb_pay_method:<MARKET>`), and applies
+  it only when the current market still offers it.
 
 With `FLW_SECRET_KEY` empty, every online method is disabled in checkout and only cash on delivery (plus bank transfer,
 if configured) works; the `FLW_API_BASE` variable exists only to point the integration at a sandbox or proxy during testing.

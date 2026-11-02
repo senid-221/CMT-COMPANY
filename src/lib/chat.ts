@@ -1243,12 +1243,22 @@ async function prepareOrder(args: Record<string, unknown>, ctx: ChatContext): Pr
     market: ctx.market,
   });
   if (problems.length) {
+    const hints: Record<string, string> = {
+      customerName: 'the name to hand the delivery to',
+      phone: 'a reachable phone number',
+      phoneLocal: `a ${ctx.market.names.en} mobile number starting ${ctx.market.phoneCode} that can receive the mobile-money prompt`,
+      addressLine: 'the delivery address',
+      city: 'the city',
+      slot: 'which delivery slot they want',
+      lines: 'which products and how many of each',
+      email: 'a shorter email address',
+    };
     return {
       model: {
         ok: false,
         error: 'need-details',
         missing: problems,
-        note: `Ask the shopper for: ${problems.join(', ')}. Do not invent or guess any of these.`,
+        note: `Ask the shopper for: ${problems.map((problem) => hints[problem] ?? problem).join('; ')}. Do not invent or guess any of these.`,
       },
     };
   }

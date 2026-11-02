@@ -7,6 +7,7 @@ import { toUnits } from './money';
 import { evaluateCode, normalizeCode } from './coupons';
 import { storefrontActive } from './vendors';
 import type { Market } from './markets';
+import { normalizePhone, walletNumberValid } from './markets';
 
 export type CreateOrderInput = {
   lines: { handle: string; quantity: number }[];
@@ -25,16 +26,23 @@ export type CreateOrderInput = {
 };
 
 export type OrderResult =
-  | { ok: true; number: string; totalCents: number; paymentMethod: PaymentMethod }
+  | { ok: true; number: string; totalCents: number; paymentMethod: PaymentMethod; phone: string }
   | { ok: false; error: string };
 
 
 const PHONE = /^[+]?[0-9\s-]{8,16}$/;
 
+/** Rails that push a prompt to the shopper's handset, so the number has to be a local one. */
+const WALLET_RAILS: PaymentMethod[] = ['mtn', 'orange', 'wave'];
+
 export function validate(input: CreateOrderInput): string[] {
   const errors: string[] = [];
+  const phone = normalizePhone(input.phone ?? '', input.market.phoneCode);
   if (!input.customerName || input.customerName.trim().length < 3) errors.push('customerName');
-  if (!PHONE.test(input.phone ?? '')) errors.push('phone');
+  if (!PHONE.test(phone)) errors.push('phone');
+  else if (WALLET_RAILS.includes(input.paymentMethod ?? 'cod') && !walletNumberValid(phone, input.market.phoneCode)) {
+    errors.push('phoneLocal');
+  }
   if (!input.addressLine || input.addressLine.trim().length < 6) errors.push('addressLine');
   if (!input.city || input.city.trim().length < 2) errors.push('city');
   if (!isSlot(input.slot)) errors.push('slot');
@@ -50,7 +58,8 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
   if (!market.methods.includes(paymentMethod)) return { ok: false, error: 'invalid:paymentMethod' };
   if (!methodAvailable(paymentMethod)) return { ok: false, error: 'payment-unavailable' };
 
-  const errors = validate(input);
+  const phone = normalizePhone(input.phone ?? '', market.phoneCode);
+  const errors = validate({ ...input, phone });
   if (errors.length) return { ok: false, error: `invalid:${errors.join(',')}` };
 
   const wanted = input.lines
@@ -146,7 +155,7 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           number,
           status: 'placed',
           customerName: input.customerName.trim().slice(0, 80),
-          phone: input.phone.trim().slice(0, 20),
+          phone: phone.slice(0, 20),
           email: input.email?.trim().toLowerCase().slice(0, 120) || null,
           addressLine: input.addressLine.trim().slice(0, 200),
           city: input.city.trim().slice(0, 60),
@@ -196,7 +205,7 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
         await tx.coupon.update({ where: { code: appliedCoupon }, data: { usedCount: { increment: 1 } } });
       }
 
-      return { ok: true as const, number: order.number, totalCents: order.totalCents, paymentMethod };
+      return { ok: true as const, number: order.number, totalCents: order.totalCents, paymentMethod, phone };
     });
   }
 

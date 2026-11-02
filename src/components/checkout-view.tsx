@@ -8,7 +8,7 @@ import { slotKey } from '@/lib/order-labels';
 import { formatMoney } from '@/lib/money';
 import { offeredRails, type Currency, type Market } from '@/lib/markets';
 import { DELIVERY_SLOTS, type Slot } from '@/lib/pricing';
-import type { PaymentMethod } from '@/lib/payment-methods';
+import { PAYMENT_METHODS, type PaymentMethod } from '@/lib/payment-methods';
 import { localizedName } from '@/lib/catalog';
 import { clearCart } from '@/lib/cart';
 import { recordOrder } from '@/lib/local-orders';
@@ -20,6 +20,18 @@ export type CheckoutPayments = {
   rails: Record<'card' | 'mtn' | 'orange' | 'wave', boolean>;
   rates: { RWF: number; XOF: number };
 };
+
+/** The rail this shopper last paid with, remembered per market. */
+const METHOD_MEMORY = 'cmb_pay_method';
+
+function rememberedMethod(code: string): PaymentMethod | null {
+  try {
+    const value = localStorage.getItem(`${METHOD_MEMORY}:${code}`);
+    return value && (PAYMENT_METHODS as readonly string[]).includes(value) ? (value as PaymentMethod) : null;
+  } catch {
+    return null;
+  }
+}
 
 export function CheckoutView({
   locale,
@@ -45,6 +57,20 @@ export function CheckoutView({
   const [discountCents, setDiscountCents] = useState(0);
   const [couponBusy, setCouponBusy] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const remembered = rememberedMethod(market.code);
+    if (remembered && offeredRails(market.methods, payments.rails).includes(remembered)) setMethod(remembered);
+  }, [market, payments.rails]);
+
+  function chooseMethod(chosen: PaymentMethod) {
+    setMethod(chosen);
+    try {
+      localStorage.setItem(`${METHOD_MEMORY}:${market.code}`, chosen);
+    } catch {
+      // Private mode only: the pick still holds for this checkout.
+    }
+  }
 
   const deliveryFee = feeFor(slot);
   const total = Math.max(0, subtotalCents - discountCents) + deliveryFee;
@@ -185,9 +211,11 @@ export function CheckoutView({
             ? t(locale, 'checkout.stale')
             : code === 'payment-unavailable'
               ? t(locale, 'checkout.onlineUnavailable')
-              : code.startsWith('invalid')
-                ? t(locale, 'checkout.required')
-                : t(locale, 'checkout.failed'),
+              : code.includes('phoneLocal')
+                ? t(locale, 'checkout.phoneLocal', { code: market.phoneCode ?? '' })
+                : code.startsWith('invalid')
+                  ? t(locale, 'checkout.required')
+                  : t(locale, 'checkout.failed'),
         );
         setSubmitting(false);
         return;
@@ -306,7 +334,7 @@ export function CheckoutView({
               key={chosen}
               method={chosen}
               selected={method === chosen}
-              onSelect={() => setMethod(chosen)}
+              onSelect={() => chooseMethod(chosen)}
               label={t(locale, PAYMENT_LABEL[chosen])}
               hint={PAYMENT_HINTS[chosen] ? t(locale, PAYMENT_HINTS[chosen]) : undefined}
             />

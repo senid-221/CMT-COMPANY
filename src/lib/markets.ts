@@ -77,3 +77,35 @@ export function marketCodeFromCountry(country: unknown): string | null {
 export function offeredRails(methods: PaymentMethod[], rails: Record<OnlinePaymentMethod, boolean>): PaymentMethod[] {
   return methods.filter((method) => method === 'cod' || method === 'bank' || rails[method]);
 }
+
+/**
+ * Collapse the many ways a shopper types a number into one stored form. A local number is
+ * completed with the market's country code, because the rider and the mobile-money prompt
+ * both have to be able to dial it.
+ */
+export function normalizePhone(raw: string, phoneCode: string | null): string {
+  const trimmed = (raw ?? '').trim();
+  const digits = trimmed.replace(/\D/g, '');
+  if (!digits) return trimmed;
+  if (trimmed.startsWith('+')) return `+${digits}`;
+  if (!phoneCode) return digits;
+  const country = phoneCode.replace(/\D/g, '');
+  if (digits.startsWith(`0${country}`)) return `+${digits.slice(1)}`;
+  if (digits.startsWith(country)) return `+${digits}`;
+  const subscriber = digits.replace(/^0/, '');
+  if (subscriber.length >= 7 && subscriber.length <= 10) return `+${country}${subscriber}`;
+  return digits;
+}
+
+/**
+ * Mobile money can only prompt a wallet on the rail's own network, so a number that is not
+ * local is a payment that cannot succeed. Caught here instead of at the gateway.
+ */
+export function walletNumberValid(phone: string, phoneCode: string | null): boolean {
+  if (!phoneCode) return true;
+  if (!phone.startsWith('+')) return false;
+  const country = phoneCode.replace(/\D/g, '');
+  const digits = phone.slice(1);
+  if (!digits.startsWith(country)) return false;
+  return /^[2-9][0-9]{7,9}$/.test(digits.slice(country.length));
+}

@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         totalCents: result.totalCents,
         customerName: typeof input.customerName === 'string' ? input.customerName.trim().slice(0, 80) : '',
         email: typeof input.email === 'string' && input.email.trim() ? input.email.trim().toLowerCase().slice(0, 120) : null,
-        phone: typeof input.phone === 'string' ? input.phone.trim().slice(0, 20) : '',
+        phone: result.phone,
         paymentMethod: result.paymentMethod,
         paymentStatus: 'pending',
         status: 'placed',

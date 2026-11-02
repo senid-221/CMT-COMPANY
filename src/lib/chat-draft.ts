@@ -138,7 +138,7 @@ export async function placeDraftOrder(input: {
         totalCents: result.totalCents,
         customerName: draft.customerName,
         email: draft.email,
-        phone: draft.phone,
+        phone: result.phone,
         paymentMethod: result.paymentMethod,
         paymentStatus: 'pending',
         status: 'placed',
