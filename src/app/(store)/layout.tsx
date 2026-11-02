@@ -18,7 +18,7 @@ import { getCustomer } from '@/lib/customer/auth';
 import { chatConfigured } from '@/lib/chat';
 import { INFO_PAGES } from '@/lib/info';
 
-const ICON_LINK = 'relative grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand';
+const ICON_LINK = 'relative grid h-12 w-12 shrink-0 place-items-center rounded-xl text-ink transition hover:bg-hover hover:text-brand active:scale-[0.96]';
 
 function menuItems(locale: Locale): MenuItem[] {
   return [
@@ -52,15 +52,21 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       ) : null}
 
       <header className="sticky top-0 z-30 border-b border-line bg-canvas/95 backdrop-blur">
-        <div className="shell flex flex-wrap items-center gap-3 py-3">
-          <Link href="/" className="shrink-0" aria-label="CityMarket">
+        <div className="shell flex flex-wrap items-center gap-x-2 gap-y-2 py-2">
+          <Link href="/" className="order-1 shrink-0" aria-label="CityMarket">
             <Logo />
           </Link>
+
+          <div className="order-2 ml-auto flex items-center gap-1.5 md:order-4 md:ml-0">
+            <LocaleSwitch locale={locale} />
+            <ThemeToggle locale={locale} />
+            <MenuButton locale={locale} items={menuItems(locale)} />
+          </div>
 
           <form
             action="/shop"
             method="get"
-            className="order-last flex w-full items-center md:order-none md:mx-4 md:w-auto md:flex-1"
+            className="order-3 flex w-full items-center md:order-2 md:mx-4 md:w-auto md:flex-1"
           >
             <div className="relative flex h-11 w-full max-w-xl items-center rounded-full border border-line bg-canvas transition focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
               <button type="submit" aria-label={t(locale, 'search.button')} className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-ink/55 hover:text-brand">
@@ -71,33 +77,30 @@ export default async function StoreLayout({ children }: { children: React.ReactN
                 name="q"
                 placeholder={t(locale, 'search.placeholder')}
                 aria-label={t(locale, 'search.placeholder')}
-                className="h-11 w-full min-w-0 bg-transparent pr-4 text-[15px] text-ink outline-none"
+                className="h-11 w-full min-w-0 bg-transparent pr-4 text-[16px] text-ink outline-none"
               />
             </div>
           </form>
 
-          <nav className="ml-auto flex items-center gap-0 sm:gap-1">
+          <nav className="order-4 flex w-full items-center justify-end gap-1 md:order-3 md:w-auto">
             <MarketSwitch locale={locale} market={market} options={availableMarkets()} />
-            <LocaleSwitch locale={locale} />
             <Link href="/notifications" aria-label={t(locale, 'nav.notifications')} className={ICON_LINK}>
-              <BellIcon size={22} />
+              <BellIcon size={26} />
             </Link>
             <Link href="/orders" aria-label={t(locale, 'nav.orders')} className={ICON_LINK}>
-              <CalendarIcon size={22} />
+              <CalendarIcon size={26} />
             </Link>
             <Link href="/cart" aria-label={t(locale, 'nav.cart')} data-cart-target className={ICON_LINK}>
-              <CartIcon size={22} />
+              <CartIcon size={26} />
               <CartBadge />
             </Link>
-            <Link href="/saved" aria-label={t(locale, 'nav.saved')} className={`${ICON_LINK} hidden sm:grid`}>
-              <BookmarkIcon size={22} />
+            <Link href="/saved" aria-label={t(locale, 'nav.saved')} className={ICON_LINK}>
+              <BookmarkIcon size={26} />
               <SavedBadge />
             </Link>
-            <Link href="/account" aria-label={t(locale, 'nav.account')} className={`${ICON_LINK} hidden sm:grid`}>
-              <UserIcon size={22} />
+            <Link href="/account" aria-label={t(locale, 'nav.account')} className={ICON_LINK}>
+              <UserIcon size={26} />
             </Link>
-            <ThemeToggle locale={locale} />
-            <MenuButton locale={locale} items={menuItems(locale)} />
           </nav>
         </div>
 

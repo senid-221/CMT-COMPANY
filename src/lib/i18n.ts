@@ -17,6 +17,8 @@ const messages = {
   'nav.account': ['Account', 'Compte'],
   'theme.dark': ['Turn on dark mode', 'Activer le mode sombre'],
   'theme.light': ['Turn on light mode', 'Activer le mode clair'],
+  'lang.switchToFr': ['Switch to French', 'Passer au français'],
+  'lang.switchToEn': ['Switch to English', "Passer à l'anglais"],
   'market.label': ['Country and currency', 'Pays et devise'],
   'market.detected': ['Detected: {country}', 'Détecté : {country}'],
   'market.keep': ['Keep {country}', 'Garder {country}'],

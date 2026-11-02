@@ -211,9 +211,9 @@ export function CheckoutView({
       : `${t(locale, 'checkout.pay')} · ${formatMoney(total, locale, pricesFor(method))}`;
 
   return (
-    <div className="shell grid gap-6 py-8 lg:grid-cols-[1fr_360px]">
-      <form onSubmit={submit} className="card space-y-5 p-6">
-        <h1 className="font-display text-2xl font-bold">{t(locale, 'checkout.title')}</h1>
+    <div className="shell grid gap-5 py-6 sm:gap-6 sm:py-8 lg:grid-cols-[1fr_360px]">
+      <form onSubmit={submit} className="card space-y-5 p-4 sm:p-6">
+        <h1 className="font-display text-xl font-bold sm:text-2xl">{t(locale, 'checkout.title')}</h1>
 
         <div className="space-y-3">
           <h2 className="font-display font-semibold text-brand">{t(locale, 'checkout.contact')}</h2>
@@ -247,7 +247,7 @@ export function CheckoutView({
         <div className="space-y-2">
           <h2 className="font-display font-semibold text-brand">{t(locale, 'checkout.slot')}</h2>
           {DELIVERY_SLOTS.map((value) => (
-            <label key={value} className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3 ${slot === value ? 'border-brand bg-brand/5' : 'border-line'}`}>
+            <label key={value} className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border px-3.5 py-3 ${slot === value ? 'border-brand bg-brand/5' : 'border-line'}`}>
               <span className="flex items-center gap-3">
                 <input type="radio" name="slot" value={value} checked={slot === value} onChange={() => setSlot(value)} className="accent-[#297357]" />
                 <span className="font-medium">{t(locale, slotKey(value))}</span>
@@ -259,7 +259,7 @@ export function CheckoutView({
 
         <div className="space-y-2">
           <h2 className="font-display font-semibold text-brand">{t(locale, 'coupon.codeLabel')}</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-stretch gap-2">
             <input
               value={couponInput}
               onChange={(event) => {
@@ -279,7 +279,7 @@ export function CheckoutView({
               aria-label={t(locale, 'coupon.codeLabel')}
               placeholder={t(locale, 'coupon.placeholder')}
               maxLength={32}
-              className="field font-display font-semibold uppercase tracking-wide"
+              className="field min-w-0 flex-1 basis-36 font-display font-semibold uppercase tracking-wide"
             />
             {appliedCode ? (
               <button type="button" className="btn btn-ghost btn-3d btn-3d-line shrink-0" onClick={removeCoupon}>
@@ -331,7 +331,7 @@ export function CheckoutView({
         </button>
       </form>
 
-      <aside className="card h-fit space-y-3 p-5 lg:sticky lg:top-24">
+      <aside className="card h-fit space-y-3 p-4 sm:p-5 lg:sticky lg:top-28">
         <h2 className="font-display text-lg font-semibold">{t(locale, 'checkout.summary')}</h2>
         <ul className="space-y-2 text-sm">
           {priced.map((l) => (
@@ -455,7 +455,7 @@ function PaymentOption({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 ${
+      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 ${
         selected ? 'border-brand bg-brand/5' : 'border-line hover:border-brand/40'
       }`}
     >

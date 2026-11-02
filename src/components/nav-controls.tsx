@@ -36,12 +36,13 @@ export function MenuButton({ items, locale }: { items: MenuItem[]; locale: Local
         aria-expanded={open}
         aria-haspopup="true"
         aria-label={t(locale, 'nav.menu')}
-        className="grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full border border-line bg-canvas text-ink transition hover:border-brand hover:text-brand"
+        className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-surface px-3 text-sm font-semibold text-ink transition hover:bg-hover hover:text-brand active:scale-[0.96]"
       >
-        {open ? <CloseIcon size={22} /> : <MenuIcon size={22} />}
+        {open ? <CloseIcon size={24} /> : <MenuIcon size={24} />}
+        <span className="hidden min-[400px]:inline">{t(locale, 'nav.menu')}</span>
       </button>
       {open ? (
-        <div className="card absolute right-0 top-12 z-40 w-60 p-1.5 shadow-lg">
+        <div className="card absolute right-0 top-[calc(100%+6px)] z-40 w-64 p-1.5 shadow-lg">
           {items.map((item) => (
             <Link
               key={item.href}
@@ -80,9 +81,9 @@ export function ThemeToggle({ locale }: { locale: Locale }) {
       onClick={toggle}
       aria-pressed={dark}
       aria-label={dark ? t(locale, 'theme.light') : t(locale, 'theme.dark')}
-      className="grid h-10 w-10 max-[399px]:h-9 max-[399px]:w-9 place-items-center rounded-full text-ink transition hover:bg-hover hover:text-brand"
+      className="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-ink transition hover:bg-hover hover:text-brand active:scale-[0.96]"
     >
-      {dark ? <SunIcon size={22} /> : <MoonIcon size={22} />}
+      {dark ? <SunIcon size={26} /> : <MoonIcon size={26} />}
     </button>
   );
 }
